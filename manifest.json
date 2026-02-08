@@ -15,7 +15,6 @@
         "Ecotale:Ecotale": ">=1.0.0"
     },
     "OptionalDependencies": {
-        "com.crystalrealm:EcoTaleAPI": ">=1.0.0",
         "au.ellie:HyUI": ">=0.8.0"
     }
 }

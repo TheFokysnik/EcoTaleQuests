@@ -247,15 +247,16 @@ public class QuestTracker {
 
         // Always notify on completion, regardless of reward success
         double finalCoins = rewardCalculator.calculateFinalReward(quest, playerLevel);
+        String displayName = localizedQuestDesc(playerUuid, quest);
         String msg;
         if (rewarded) {
             msg = langManager.getForPlayer(playerUuid, "quest.completed",
-                    "name", quest.getName(),
+                    "name", displayName,
                     "reward", MessageUtil.formatCoins(finalCoins));
         } else {
             // Reward failed (economy unavailable) — still notify completion
             msg = langManager.getForPlayer(playerUuid, "quest.completed_no_reward",
-                    "name", quest.getName());
+                    "name", displayName);
         }
         MessageUtil.sendMessage(playerUuid, msg);
 
@@ -269,10 +270,10 @@ public class QuestTracker {
         double required = quest.getObjective().getRequiredAmount();
         double current = pqd.getCurrentProgress();
 
-        // Формируем описание квеста для сообщения
-        String questName = quest.getName();
+        // Используем локализованное короткое имя (только цель)
+        String shortName = localizedQuestShort(playerUuid, quest);
         String msg = langManager.getForPlayer(playerUuid, "quest.action_progress",
-                "name", questName,
+                "name", shortName,
                 "current", String.valueOf((int) current),
                 "required", String.valueOf((int) required));
         MessageUtil.sendMessage(playerUuid, msg);
@@ -286,8 +287,9 @@ public class QuestTracker {
         double pct = current / required;
         if (isNotifiableMilestone(pct, (current - 1) / required)) {
             String bar = MessageUtil.progressBar(current, required, 10);
+            String shortName = localizedQuestShort(playerUuid, quest);
             String msg = langManager.getForPlayer(playerUuid, "quest.progress",
-                    "name", quest.getName(),
+                    "name", shortName,
                     "current", String.valueOf((int) current),
                     "required", String.valueOf((int) required),
                     "bar", bar);
@@ -299,6 +301,41 @@ public class QuestTracker {
         return (newPct >= 0.25 && oldPct < 0.25) ||
                (newPct >= 0.50 && oldPct < 0.50) ||
                (newPct >= 0.75 && oldPct < 0.75);
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  LOCALIZED QUEST NAMES
+    // ═════════════════════════════════════════════════════════════
+
+    /**
+     * Полное локализованное описание квеста, например:
+     * «Добыть: Медь ×22» или «Заработать 500 валюты».
+     * Используется в сообщениях о завершении и в GUI.
+     */
+    private String localizedQuestDesc(UUID playerUuid, Quest quest) {
+        QuestObjective obj = quest.getObjective();
+        String typeKey = "quest.desc." + obj.getType().getId();
+        String target = obj.getTarget();
+        String targetDisplay = (target != null && !target.isEmpty())
+                ? langManager.getForPlayer(playerUuid, "target." + target.toLowerCase())
+                : "";
+        return langManager.getForPlayer(playerUuid, typeKey,
+                "amount", String.valueOf((int) obj.getRequiredAmount()),
+                "target", targetDisplay);
+    }
+
+    /**
+     * Короткое локализованное имя квеста для прогресс-сообщений:
+     * «Медь», «Зомби», «Валюта» и т.д.
+     */
+    private String localizedQuestShort(UUID playerUuid, Quest quest) {
+        QuestObjective obj = quest.getObjective();
+        String target = obj.getTarget();
+        if (target != null && !target.isEmpty()) {
+            return langManager.getForPlayer(playerUuid, "target." + target.toLowerCase());
+        }
+        // Для квестов без цели (earn_coins, gain_xp)
+        return langManager.getForPlayer(playerUuid, "quest.type." + obj.getType().getId());
     }
 
     // ═════════════════════════════════════════════════════════════

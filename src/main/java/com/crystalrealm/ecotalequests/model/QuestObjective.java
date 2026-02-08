@@ -56,6 +56,9 @@ public class QuestObjective {
         // Если цель не указана или "*" — принимаем любую
         if (target == null || target.isEmpty() || "*".equals(target)) return true;
 
+        // Wildcard: "any_mob", "any_ore" и т.д. — принимаем любую цель данного типа
+        if (target.startsWith("any")) return true;
+
         // Иначе — точное совпадение (case-insensitive, partial match)
         if (actionTarget == null) return false;
         String lowerTarget = target.toLowerCase();
