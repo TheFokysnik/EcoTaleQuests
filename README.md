@@ -41,7 +41,7 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 |:-----------|:--------|:--------:|:------------|
 | [Ecotale](https://curseforge.com/hytale/mods/ecotale) | ≥ 1.0.0 | ✅ | Economy & currency system |
 | [EcoTale API](https://github.com/CrystalRealm/ecotale-api) | ≥ 1.0.0 | ✅ | Shared economy API contracts |
-| [RPG Leveling](https://curseforge.com/hytale/mods/rpg-leveling) | ≥ 0.2.0 | ❌ | Level-scaling for quest rewards |
+| [RPG Leveling](https://www.curseforge.com/hytale/mods/rpg-leveling-and-stats) | ≥ 0.2.0 | ❌ | Level-scaling for quest rewards |
 
 > [!TIP]
 > Without RPG Leveling, all players are treated as level 1. Quest generation and rewards still work — just without level scaling.
@@ -363,4 +363,4 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ---
 
-**Made with ❤️ by [CrystalRealm](https://github.com/CrystalRealm) for the Hytale community**
+**Made with ❤️ by [CrystalRealm](https://hytale-server.pro-gamedev.ru/) for the Hytale community**
