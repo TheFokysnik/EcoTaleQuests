@@ -1,0 +1,74 @@
+{
+  "General": {
+    "DebugMode": false,
+    "Language": "ru",
+    "MessagePrefix": "<dark_gray>[<gold>⚔<dark_gray>]",
+    "NotifyOnProgress": true,
+    "NotifyOnComplete": true,
+    "AutoSaveIntervalMinutes": 5
+  },
+  "QuestLimits": {
+    "MaxDailyActive": 3,
+    "MaxWeeklyActive": 1,
+    "DailyPoolSize": 6,
+    "WeeklyPoolSize": 3,
+    "MaxAbandonPerDay": 2,
+    "DailyResetTime": "00:00",
+    "WeeklyResetDay": "MONDAY"
+  },
+  "Generation": {
+    "KillMobs": {
+      "zombie": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 30, "WeeklyMax": 80, "MinLevel": 0 },
+      "skeleton": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 25, "WeeklyMax": 70, "MinLevel": 0 },
+      "spider": { "DailyMin": 5, "DailyMax": 12, "WeeklyMin": 20, "WeeklyMax": 60, "MinLevel": 3 },
+      "trork": { "DailyMin": 3, "DailyMax": 10, "WeeklyMin": 15, "WeeklyMax": 50, "MinLevel": 5 },
+      "outlander": { "DailyMin": 3, "DailyMax": 8, "WeeklyMin": 10, "WeeklyMax": 40, "MinLevel": 10 },
+      "raptor": { "DailyMin": 2, "DailyMax": 6, "WeeklyMin": 8, "WeeklyMax": 30, "MinLevel": 15 }
+    },
+    "MineOres": {
+      "copper": { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 50, "WeeklyMax": 150, "MinLevel": 0 },
+      "iron": { "DailyMin": 8, "DailyMax": 25, "WeeklyMin": 40, "WeeklyMax": 120, "MinLevel": 5 },
+      "gold": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 25, "WeeklyMax": 80, "MinLevel": 10 },
+      "cobalt": { "DailyMin": 3, "DailyMax": 10, "WeeklyMin": 15, "WeeklyMax": 50, "MinLevel": 20 },
+      "mythril": { "DailyMin": 2, "DailyMax": 6, "WeeklyMin": 10, "WeeklyMax": 30, "MinLevel": 30 }
+    },
+    "ChopWood": {
+      "oak": { "DailyMin": 15, "DailyMax": 40, "WeeklyMin": 80, "WeeklyMax": 200, "MinLevel": 0 },
+      "birch": { "DailyMin": 15, "DailyMax": 40, "WeeklyMin": 80, "WeeklyMax": 200, "MinLevel": 0 },
+      "pine": { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 60, "WeeklyMax": 150, "MinLevel": 3 },
+      "redwood": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 30, "WeeklyMax": 80, "MinLevel": 10 }
+    },
+    "HarvestCrops": {
+      "wheat": { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 60, "WeeklyMax": 150, "MinLevel": 0 },
+      "potato": { "DailyMin": 10, "DailyMax": 25, "WeeklyMin": 50, "WeeklyMax": 120, "MinLevel": 0 },
+      "carrot": { "DailyMin": 8, "DailyMax": 20, "WeeklyMin": 40, "WeeklyMax": 100, "MinLevel": 3 },
+      "pumpkin": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 25, "WeeklyMax": 70, "MinLevel": 5 },
+      "corn": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 20, "WeeklyMax": 60, "MinLevel": 5 }
+    },
+    "EarnCoins": { "DailyMin": 100, "DailyMax": 500, "WeeklyMin": 500, "WeeklyMax": 2500, "MinLevel": 0 },
+    "GainXP": { "DailyMin": 50, "DailyMax": 200, "WeeklyMin": 200, "WeeklyMax": 1000, "MinLevel": 0 }
+  },
+  "Rewards": {
+    "BaseDailyCoins": 50.0,
+    "BaseWeeklyCoins": 200.0,
+    "BaseDailyXP": 25,
+    "BaseWeeklyXP": 100,
+    "LevelScalingFactor": 0.02,
+    "MaxLevelMultiplier": 3.0,
+    "DifficultyMultipliers": {
+      "kill_mob": 1.0,
+      "mine_ore": 0.8,
+      "chop_wood": 0.7,
+      "harvest_crop": 0.6,
+      "earn_coins": 1.2,
+      "gain_xp": 1.1
+    }
+  },
+  "Protection": {
+    "RequireOnline": true,
+    "MinPlaytimeMinutes": 5,
+    "QuestAcceptCooldownMs": 1000,
+    "PreventDuplicateTypes": true,
+    "AllowedWorlds": []
+  }
+}

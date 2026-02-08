@@ -1,0 +1,86 @@
+// ═══════════════════════════════════════════════════════════
+//  EcoTaleQuests — Quest Panel UI
+//  File:  Pages/CrystalRealm_EcoTaleQuests_QuestPanel.ui
+//  Hytale .ui format — declarative layout for quest browsing
+// ═══════════════════════════════════════════════════════════
+
+Group #Root {
+    Anchor { Width: 520; Height: 420; }
+    LayoutMode: Vertical;
+    Padding { Top: 12; Bottom: 12; Left: 16; Right: 16; }
+
+    // ── Header ──────────────────────────────────────────────
+    Label #Title {
+        Anchor { Width: Full; Height: 36; }
+        LabelStyle {
+            FontSize: 22;
+            TextColor: "#FFAA00";
+            RenderBold: true;
+            HorizontalTextAlignment: Center;
+        }
+        Text: "EcoTaleQuests";
+    }
+
+    // ── Tab Navigation ──────────────────────────────────────
+    TabNavigation #QuestTabs {
+        Anchor { Width: Full; Height: 36; }
+
+        TabButton #TabDaily {
+            Text: "[D] Daily";
+            LabelStyle {
+                FontSize: 14;
+                TextColor: "#FFFF55";
+            }
+        }
+
+        TabButton #TabWeekly {
+            Text: "[W] Weekly";
+            LabelStyle {
+                FontSize: 14;
+                TextColor: "#FFAA00";
+            }
+        }
+
+        TabButton #TabActive {
+            Text: "Active";
+            LabelStyle {
+                FontSize: 14;
+                TextColor: "#55FF55";
+            }
+        }
+    }
+
+    // ── Quest List Container ────────────────────────────────
+    Group #QuestListContainer {
+        Anchor { Width: Full; Height: 280; }
+        LayoutMode: Vertical;
+        Padding { Top: 8; Bottom: 8; Left: 4; Right: 4; }
+
+        // Quest cards are dynamically appended here
+        // Each card uses CrystalRealm_EcoTaleQuests_QuestCard.ui
+    }
+
+    // ── Footer / Status Bar ─────────────────────────────────
+    Group #Footer {
+        Anchor { Width: Full; Height: 32; }
+        LayoutMode: Horizontal;
+
+        Label #StatusText {
+            Anchor { Width: 320; Height: 28; }
+            LabelStyle {
+                FontSize: 12;
+                TextColor: "#AAAAAA";
+            }
+            Text: "";
+        }
+
+        TextButton #CloseButton {
+            Anchor { Width: 120; Height: 28; }
+            TextButtonStyle {
+                FontSize: 13;
+                TextColor: "#FF5555";
+            }
+            Text: "Close";
+        }
+    }
+}

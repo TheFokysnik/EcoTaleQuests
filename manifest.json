@@ -1,0 +1,21 @@
+{
+    "Group": "com.crystalrealm",
+    "Name": "EcoTaleQuests",
+    "Version": "1.0.0",
+    "Description": "Daily and weekly quest system with GUI panel, localization, and Ecotale economy rewards.",
+    "Main": "com.crystalrealm.ecotalequests.EcoTaleQuestsPlugin",
+    "Authors": [
+        {
+            "Name": "CrystalRealm",
+            "Url": "https://hytale-server.pro-gamedev.ru"
+        }
+    ],
+    "ServerVersion": ">=1.0.0",
+    "Dependencies": {
+        "Ecotale:Ecotale": ">=1.0.0"
+    },
+    "OptionalDependencies": {
+        "com.crystalrealm:EcoTaleAPI": ">=1.0.0",
+        "au.ellie:HyUI": ">=0.8.0"
+    }
+}
