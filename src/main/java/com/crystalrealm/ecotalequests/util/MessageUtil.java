@@ -38,6 +38,13 @@ public final class MessageUtil {
         PLAYER_REF_CACHE.clear();
     }
 
+    /**
+     * Возвращает множество UUID всех кешированных игроков.
+     */
+    public static java.util.Set<UUID> getCachedPlayerUuids() {
+        return PLAYER_REF_CACHE.keySet();
+    }
+
     // ── Message Sending ─────────────────────────────────────────
 
     /**
@@ -56,34 +63,19 @@ public final class MessageUtil {
 
     private static void trySendViaPlayerRef(Object playerRef, String text) {
         try {
+            // Convert MiniMessage to Hytale JSON
             String jsonText = MiniMessageParser.toJson(text);
+
+            // Parse JSON into Message object
             Class<?> msgClass = Class.forName("com.hypixel.hytale.server.core.Message");
             Method parseMethod = msgClass.getMethod("parse", String.class);
             Object parsedMsg = parseMethod.invoke(null, jsonText);
 
-            // Попытка: PlayerRef → getPlayer() → sendMessage(Message)
-            Object player = null;
-            try {
-                Method getPlayer = playerRef.getClass().getMethod("getPlayer");
-                player = getPlayer.invoke(playerRef);
-            } catch (NoSuchMethodException ignored) {}
-
-            if (player != null) {
-                try {
-                    Method sendMsg = player.getClass().getMethod("sendMessage", msgClass);
-                    sendMsg.invoke(player, parsedMsg);
-                    return;
-                } catch (NoSuchMethodException ignored) {}
-            }
-
-            // Fallback: PlayerRef.sendMessage(Object)
-            try {
-                Method sendMsg = playerRef.getClass().getMethod("sendMessage", Object.class);
-                sendMsg.invoke(playerRef, parsedMsg);
-            } catch (NoSuchMethodException ignored) {}
-
+            // Same pattern as QuestGui.sendMsg — direct playerRef.sendMessage(Message)
+            Method sendMethod = playerRef.getClass().getMethod("sendMessage", msgClass);
+            sendMethod.invoke(playerRef, parsedMsg);
         } catch (Throwable e) {
-            LOGGER.debug("trySendViaPlayerRef failed: {}", e.getMessage());
+            LOGGER.warn("[sendMsg] failed for {}: {}", playerRef.getClass().getSimpleName(), e.getMessage());
         }
     }
 

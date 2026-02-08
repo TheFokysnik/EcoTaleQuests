@@ -1,0 +1,63 @@
+// ═══════════════════════════════════════════════════════════
+//  EcoTaleQuests — Quest Card Template
+//  Dynamically appended into #QuestListContainer for each quest
+// ═══════════════════════════════════════════════════════════
+
+Group #QuestCard {
+    Anchor { Width: Full; Height: 56; }
+    LayoutMode: Horizontal;
+    Padding { Top: 4; Bottom: 4; Left: 8; Right: 8; }
+
+    // ── Quest Info ──────────────────────────────────────────
+    Group #QuestInfo {
+        Anchor { Width: 340; Height: 48; }
+        LayoutMode: Vertical;
+
+        Label #QuestName {
+            Anchor { Width: Full; Height: 20; }
+            LabelStyle {
+                FontSize: 14;
+                TextColor: "#FFFFFF";
+                RenderBold: true;
+            }
+            Text: "";
+        }
+
+        Label #QuestDesc {
+            Anchor { Width: Full; Height: 16; }
+            LabelStyle {
+                FontSize: 11;
+                TextColor: "#AAAAAA";
+            }
+            Text: "";
+        }
+
+        ProgressBar #QuestProgress {
+            Anchor { Width: Full; Height: 8; }
+            MinValue: 0;
+            MaxValue: 100;
+            Value: 0;
+        }
+    }
+
+    // ── Reward Info ─────────────────────────────────────────
+    Label #QuestReward {
+        Anchor { Width: 80; Height: 48; }
+        LabelStyle {
+            FontSize: 13;
+            TextColor: "#55FF55";
+            HorizontalTextAlignment: Center;
+        }
+        Text: "";
+    }
+
+    // ── Action Button ───────────────────────────────────────
+    TextButton #QuestAction {
+        Anchor { Width: 70; Height: 32; }
+        TextButtonStyle {
+            FontSize: 12;
+            TextColor: "#FFFFFF";
+        }
+        Text: "Accept";
+    }
+}

@@ -209,8 +209,13 @@ public class QuestTracker {
 
             if (completed) {
                 onQuestCompleted(playerUuid, quest, playerLevel);
-            } else if (config.getGeneral().isNotifyOnProgress()) {
-                notifyProgress(playerUuid, quest, pqd);
+            } else {
+                // Отправляем прогресс при каждом действии
+                notifyActionProgress(playerUuid, quest, pqd);
+                // Дополнительно уведомляем на 25/50/75% с прогресс-баром
+                if (config.getGeneral().isNotifyOnProgress()) {
+                    notifyMilestone(playerUuid, quest, pqd);
+                }
             }
         }
     }
@@ -237,21 +242,43 @@ public class QuestTracker {
         LOGGER.info("Player {} completed quest {} ({})",
                 playerUuid, quest.getShortId(), quest.getName());
 
-        // Выдаём награду
+        // Grant reward
         boolean rewarded = rewardCalculator.grantReward(playerUuid, quest, playerLevel);
 
-        if (rewarded && config.getGeneral().isNotifyOnComplete()) {
-            double finalCoins = rewardCalculator.calculateFinalReward(quest, playerLevel);
-            String msg = langManager.getForPlayer(playerUuid, "quest.completed",
+        // Always notify on completion, regardless of reward success
+        double finalCoins = rewardCalculator.calculateFinalReward(quest, playerLevel);
+        String msg;
+        if (rewarded) {
+            msg = langManager.getForPlayer(playerUuid, "quest.completed",
                     "name", quest.getName(),
                     "reward", MessageUtil.formatCoins(finalCoins));
-            MessageUtil.sendMessage(playerUuid, msg);
+        } else {
+            // Reward failed (economy unavailable) — still notify completion
+            msg = langManager.getForPlayer(playerUuid, "quest.completed_no_reward",
+                    "name", quest.getName());
         }
+        MessageUtil.sendMessage(playerUuid, msg);
 
         invalidateCache(playerUuid);
     }
 
-    private void notifyProgress(UUID playerUuid, Quest quest, PlayerQuestData pqd) {
+    /**
+     * Отправляет краткое сообщение прогресса при каждом действии.
+     */
+    private void notifyActionProgress(UUID playerUuid, Quest quest, PlayerQuestData pqd) {
+        double required = quest.getObjective().getRequiredAmount();
+        double current = pqd.getCurrentProgress();
+
+        // Формируем описание квеста для сообщения
+        String questName = quest.getName();
+        String msg = langManager.getForPlayer(playerUuid, "quest.action_progress",
+                "name", questName,
+                "current", String.valueOf((int) current),
+                "required", String.valueOf((int) required));
+        MessageUtil.sendMessage(playerUuid, msg);
+    }
+
+    private void notifyMilestone(UUID playerUuid, Quest quest, PlayerQuestData pqd) {
         double required = quest.getObjective().getRequiredAmount();
         double current = pqd.getCurrentProgress();
 

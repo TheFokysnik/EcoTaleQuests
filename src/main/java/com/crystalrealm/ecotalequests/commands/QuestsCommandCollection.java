@@ -409,19 +409,35 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
                 if (ref != null && ref.isValid()) {
                     Store<EntityStore> store = ref.getStore();
                     try {
-                        // Reflection: stub erased signature differs from real server
-                        java.lang.reflect.Method getComp = store.getClass().getMethod(
-                                "getComponent", Ref.class, ComponentType.class);
-                        Object result = getComp.invoke(store, ref, PlayerRef.getComponentType());
-                        if (result instanceof PlayerRef playerRef) {
-                            QuestGui.open(plugin, playerRef, store, sender.getUuid());
+                        // Store.getComponent must run on WorldThread, not ForkJoinPool.
+                        // Use reflection for getExternalData().getWorld() to get the
+                        // World (Executor) since stub return types differ from real API.
+                        java.lang.reflect.Method getExt = store.getClass()
+                                .getMethod("getExternalData");
+                        Object extData = getExt.invoke(store);
+                        java.lang.reflect.Method getWorld = extData.getClass()
+                                .getMethod("getWorld");
+                        Object worldObj = getWorld.invoke(extData);
+
+                        if (worldObj instanceof java.util.concurrent.Executor worldExec) {
+                            return CompletableFuture.runAsync(() -> {
+                                try {
+                                    java.lang.reflect.Method getComp = store.getClass()
+                                            .getMethod("getComponent", Ref.class, ComponentType.class);
+                                    Object result = getComp.invoke(store, ref,
+                                            PlayerRef.getComponentType());
+                                    if (result instanceof PlayerRef playerRef) {
+                                        QuestGui.open(plugin, playerRef, store, sender.getUuid());
+                                    }
+                                } catch (NoClassDefFoundError e) {
+                                    LOGGER.warn("HyUI not available: {}", e.getMessage());
+                                } catch (Exception e) {
+                                    LOGGER.error("[quests gui] failed on WorldThread", e);
+                                }
+                            }, worldExec);
                         } else {
-                            LOGGER.warn("[quests gui] getComponent returned null or unexpected type");
+                            LOGGER.warn("[quests gui] World is not an Executor");
                         }
-                    } catch (NoClassDefFoundError e) {
-                        LOGGER.warn("HyUI not available: {}", e.getMessage());
-                        context.sendMessage(msg(
-                                "<red>Quest GUI requires HyUI mod on the server.</red>"));
                     } catch (ReflectiveOperationException e) {
                         LOGGER.error("[quests gui] reflection failed", e);
                         context.sendMessage(msg("<red>Failed to open GUI.</red>"));

@@ -42,19 +42,26 @@ public class MobKillQuestListener {
         }
 
         rpgApi.registerExperienceGainedListener(event -> {
+            com.hypixel.hytale.server.core.universe.PlayerRef playerRef = event.getPlayer();
+            UUID playerUuid = playerRef.getUuid();
+            int playerLevel = resolvePlayerLevel(event);
+
+            // Кешируем PlayerRef для отправки сообщений
+            MessageUtil.cachePlayerRef(playerUuid, playerRef);
+
+            // ── GAIN_XP: track all XP gains ──
+            double xpAmount = event.getXpAmount();
+            if (xpAmount > 0) {
+                questTracker.handleXPGained(playerUuid, xpAmount, playerLevel);
+            }
+
+            // ── KILL_MOB: track mob kills ──
             if (!event.getSource().equals(XPSource.ENTITY_KILL)) return;
 
             EntityKillContext killCtx = event.getEntityKillContext();
             if (killCtx == null) return;
 
-            com.hypixel.hytale.server.core.universe.PlayerRef playerRef = event.getPlayer();
-            UUID playerUuid = playerRef.getUuid();
-
-            // Кешируем PlayerRef для отправки сообщений
-            MessageUtil.cachePlayerRef(playerUuid, playerRef);
-
             String entityType = resolveEntityName(killCtx);
-            int playerLevel = resolvePlayerLevel(event);
 
             questTracker.handleAction(playerUuid, QuestType.KILL_MOB, entityType, 1, playerLevel);
         });

@@ -6,6 +6,7 @@ import com.crystalrealm.ecotalequests.config.QuestsConfig;
 import com.crystalrealm.ecotalequests.generator.QuestGenerator;
 import com.crystalrealm.ecotalequests.lang.LangManager;
 import com.crystalrealm.ecotalequests.listeners.BlockQuestListener;
+import com.crystalrealm.ecotalequests.listeners.CoinQuestListener;
 import com.crystalrealm.ecotalequests.listeners.MobKillQuestListener;
 import com.crystalrealm.ecotalequests.model.QuestPeriod;
 import com.crystalrealm.ecotalequests.protection.QuestAbuseGuard;
@@ -60,6 +61,7 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
     // ── Listeners ───────────────────────────────────────────────
     private MobKillQuestListener mobKillListener;
     private BlockQuestListener blockQuestListener;
+    private CoinQuestListener coinQuestListener;
 
     // ── RPG Integration ─────────────────────────────────────────
     private RPGLevelingAPI rpgApi;
@@ -126,6 +128,9 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         blockQuestListener = new BlockQuestListener(questTracker);
         blockQuestListener.register(getEntityStoreRegistry());
 
+        coinQuestListener = new CoinQuestListener(questTracker);
+        coinQuestListener.register();
+
         // ── Generate initial quest pools ──
         int avgLevel = rpgApi != null ? 5 : 1; // стартовый уровень
         questTracker.refreshPools(avgLevel);
@@ -160,6 +165,7 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         LOGGER.info("  EcoTaleQuests v{} — STARTED", VERSION);
         LOGGER.info("  Mob kill tracking: {}", mobKillListener.isRegistered() ? "ACTIVE" : "DISABLED");
         LOGGER.info("  Block tracking:    ACTIVE");
+        LOGGER.info("  Coin tracking:     {}", coinQuestListener.isRegistered() ? "ACTIVE" : "DISABLED");
         LOGGER.info("  Daily pool:        {} quests", storage.loadQuestPool(QuestPeriod.DAILY).size());
         LOGGER.info("  Weekly pool:       {} quests", storage.loadQuestPool(QuestPeriod.WEEKLY).size());
         LOGGER.info("═══════════════════════════════════════");
@@ -172,6 +178,7 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         // Cancel scheduled tasks
         if (autoSaveTask != null) autoSaveTask.cancel(false);
         if (poolRefreshTask != null) poolRefreshTask.cancel(false);
+        if (coinQuestListener != null) coinQuestListener.shutdown();
 
         // Save all data
         if (storage != null) storage.shutdown();
@@ -192,11 +199,24 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
     private RPGLevelingAPI detectRPGLeveling() {
         try {
             Class<?> clazz = Class.forName("org.zuxaw.plugin.api.RPGLevelingAPI");
-            java.lang.reflect.Method getInstance = clazz.getMethod("getInstance");
-            Object instance = getInstance.invoke(null);
+            // Try get() first (beta-5+ API), then getInstance() as fallback
+            Object instance = null;
+            for (String methodName : new String[]{"get", "getInstance", "getAPI"}) {
+                try {
+                    java.lang.reflect.Method m = clazz.getMethod(methodName);
+                    instance = m.invoke(null);
+                    if (instance != null) {
+                        LOGGER.info("RPG Leveling API found via {}()", methodName);
+                        break;
+                    }
+                } catch (NoSuchMethodException ignored) {}
+            }
             if (instance instanceof RPGLevelingAPI api) {
                 LOGGER.info("RPG Leveling API detected and connected.");
                 return api;
+            }
+            if (instance != null) {
+                LOGGER.warn("RPG Leveling API instance found but type mismatch: {}", instance.getClass().getName());
             }
         } catch (ClassNotFoundException e) {
             LOGGER.info("RPG Leveling not found — mob kill and XP quests will be limited.");

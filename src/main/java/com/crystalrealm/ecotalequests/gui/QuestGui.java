@@ -6,13 +6,13 @@ import com.crystalrealm.ecotalequests.EcoTaleQuestsPlugin;
 import com.crystalrealm.ecotalequests.lang.LangManager;
 import com.crystalrealm.ecotalequests.model.*;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
+import com.crystalrealm.ecotalequests.util.MiniMessageParser;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
 
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -114,7 +114,7 @@ public final class QuestGui {
             UUID   questId = entry.getValue();
             builder.addEventListener(btnId, CustomUIEventBindingType.Activating, (data, ctx) -> {
                 if (!plugin.getAbuseGuard().canAcceptQuest(playerUuid)) {
-                    playerRef.sendMessage(Message.raw(L(lang, playerUuid, "cmd.accept.cooldown")));
+                    sendMsg(playerRef, L(lang, playerUuid, "cmd.accept.cooldown"));
                     return;
                 }
                 QuestTracker.AcceptResult result = tracker.acceptQuest(playerUuid, questId);
@@ -134,7 +134,9 @@ public final class QuestGui {
                     case QUEST_NOT_FOUND -> L(lang, playerUuid, "cmd.accept.not_found",
                                               "id", questId.toString().substring(0, 8));
                 };
-                playerRef.sendMessage(Message.raw(msg));
+                sendMsg(playerRef, msg);
+                // Refresh: reopen GUI with updated data
+                open(plugin, playerRef, store, playerUuid);
             });
         }
 
@@ -152,7 +154,9 @@ public final class QuestGui {
                                             "id", questId.toString().substring(0, 8));
                     case LIMIT_REACHED -> L(lang, playerUuid, "cmd.abandon.limit");
                 };
-                playerRef.sendMessage(Message.raw(msg));
+                sendMsg(playerRef, msg);
+                // Refresh: reopen GUI with updated data
+                open(plugin, playerRef, store, playerUuid);
             });
         }
 
@@ -165,21 +169,20 @@ public final class QuestGui {
     // ═══════════════════════════════════════════════════════════
 
     private static String headerHtml(LangManager lang, UUID uuid) {
-        String title  = esc(L(lang, uuid, "cmd.available.header"));
-        String daily  = esc("[D] " + L(lang, uuid, "quest.period.daily"));
-        String weekly = esc("[W] " + L(lang, uuid, "quest.period.weekly"));
+        String daily  = esc(L(lang, uuid, "quest.period.daily"));
+        String weekly = esc(L(lang, uuid, "quest.period.weekly"));
         String active = esc(L(lang, uuid, "gui.tab.active"));
 
         return """
             <div class="page-overlay">
-              <div class="decorated-container" data-hyui-title="%s"
+              <div class="decorated-container" data-hyui-title="Quests"
                    style="anchor-width: 720; anchor-height: 550;">
                 <div class="container-contents" style="layout-mode: Top; padding: 6;">
                   <nav id="quest-tabs" class="tabs"
                        data-tabs="daily:%s:daily-content,weekly:%s:weekly-content,active:%s:active-content"
                        data-selected="daily">
                   </nav>
-            """.formatted(title, daily, weekly, active);
+            """.formatted(daily, weekly, active);
     }
 
     private static String tabOpen(String tabId) {
@@ -206,7 +209,6 @@ public final class QuestGui {
     private static String availableCard(LangManager lang, UUID uuid,
                                         Quest quest, String btnId) {
         String name      = esc(localizedDesc(lang, uuid, quest));
-        String objective = esc(localizedObjective(lang, uuid, quest));
         String reward    = esc("+" + MessageUtil.formatCoins(quest.getReward().getBaseCoins()) + "$");
         String btnText   = esc(L(lang, uuid, "gui.btn.accept"));
 
@@ -216,12 +218,11 @@ public final class QuestGui {
                 <p style="color: #4CAF50; font-size: 16; font-weight: bold; flex-weight: 1;">%s</p>
                 <p style="color: #FFD700; font-size: 14; font-weight: bold;">%s</p>
               </div>
-              <p style="color: #cccccc; font-size: 13;">%s</p>
               <div style="layout-mode: Left; padding-top: 4;">
                 <button id="%s" class="small-secondary-button">%s</button>
               </div>
             </div>
-            """.formatted(name, reward, objective, btnId, btnText);
+            """.formatted(name, reward, btnId, btnText);
     }
 
     /** Card for an active quest with progress bar. */
@@ -270,11 +271,8 @@ public final class QuestGui {
     }
 
     private static String localizedObjective(LangManager lang, UUID uuid, Quest quest) {
-        QuestObjective obj = quest.getObjective();
-        String target  = obj.getTarget();
-        String display = (target != null && !target.isEmpty())
-                ? L(lang, uuid, "target." + target.toLowerCase()) : "";
-        return obj.getType().getId() + " -> " + display + " x" + (int) obj.getRequiredAmount();
+        // Reuse the same localized description as the card title
+        return localizedDesc(lang, uuid, quest);
     }
 
     /** Minimal HTML entity escaping. */
@@ -284,6 +282,27 @@ public final class QuestGui {
                    .replace("<", "&lt;")
                    .replace(">", "&gt;")
                    .replace("\"", "&quot;");
+    }
+
+    /**
+     * Send a chat message to the player via reflection to avoid
+     * NoSuchMethodError from stub signature mismatch.
+     */
+    private static void sendMsg(PlayerRef playerRef, String miniMessageText) {
+        try {
+            // Strip MiniMessage tags and convert to Hytale rich JSON
+            String json = MiniMessageParser.toJson(miniMessageText);
+            // Get Message.parse(String) via reflection
+            Class<?> msgClass = Class.forName("com.hypixel.hytale.server.core.Message");
+            java.lang.reflect.Method parseMethod = msgClass.getMethod("parse", String.class);
+            Object message = parseMethod.invoke(null, json);
+            // Call playerRef.sendMessage(Message)
+            java.lang.reflect.Method sendMethod = playerRef.getClass()
+                    .getMethod("sendMessage", msgClass);
+            sendMethod.invoke(playerRef, message);
+        } catch (Exception e) {
+            LOGGER.warn("[sendMsg] reflection failed: {}", e.getMessage());
+        }
     }
 
     private static final String CSS = """

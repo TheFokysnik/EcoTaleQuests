@@ -211,8 +211,14 @@ public class BlockQuestListener {
         // Через reflection пробуем получить уровень из RPG Leveling
         try {
             Class<?> rpgClass = Class.forName("org.zuxaw.plugin.api.RPGLevelingAPI");
-            java.lang.reflect.Method getInstance = rpgClass.getMethod("getInstance");
-            Object api = getInstance.invoke(null);
+            Object api = null;
+            for (String methodName : new String[]{"get", "getInstance", "getAPI"}) {
+                try {
+                    java.lang.reflect.Method m = rpgClass.getMethod(methodName);
+                    api = m.invoke(null);
+                    if (api != null) break;
+                } catch (NoSuchMethodException ignored) {}
+            }
             if (api != null) {
                 java.lang.reflect.Method getLevel = api.getClass().getMethod("getPlayerLevel", UUID.class);
                 Object level = getLevel.invoke(api, playerUuid);
