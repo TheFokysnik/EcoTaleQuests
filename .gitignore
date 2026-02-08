@@ -1,0 +1,67 @@
+# Gradle
+.gradle/
+build/
+*.gradle
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.eml
+.classpath
+.project
+.settings/
+*.cake
+
+# Build artifacts
+out/
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.rar
+
+# System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~
+.vimrc
+.jshintrc
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node (if any)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Maven (if any)
+pom.xml.tag
+pom.xml.releaseBackup
+
+# JetBrains
+*.jks
+*.keystore
