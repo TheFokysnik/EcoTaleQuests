@@ -188,7 +188,7 @@ public final class QuestGui {
     private static String tabOpen(String tabId) {
         return """
             <div id="%s-content" class="tab-content" data-hyui-tab-id="%s"
-                 style="layout-mode: Top; padding: 4;">
+                 style="layout: topscrolling; padding: 4;">
             """.formatted(tabId, tabId);
     }
 
@@ -213,14 +213,10 @@ public final class QuestGui {
         String btnText   = esc(L(lang, uuid, "gui.btn.accept"));
 
         return """
-            <div style="background-color: #1a1a2e(0.85); padding: 8; layout-mode: Top;">
-              <div style="layout-mode: Left;">
-                <p style="color: #4CAF50; font-size: 16; font-weight: bold; flex-weight: 1;">%s</p>
-                <p style="color: #FFD700; font-size: 14; font-weight: bold;">%s</p>
-              </div>
-              <div style="layout-mode: Left; padding-top: 4;">
-                <button id="%s" class="small-secondary-button">%s</button>
-              </div>
+            <div style="background-color: #1a1a2e(0.85); padding: 4 8; layout-mode: Left;">
+              <p style="color: #4CAF50; font-size: 14; font-weight: bold; flex-weight: 1;">%s</p>
+              <p style="color: #FFD700; font-size: 13; font-weight: bold; anchor-width: 70;">%s</p>
+              <button id="%s" class="small-secondary-button">%s</button>
             </div>
             """.formatted(name, reward, btnId, btnText);
     }
@@ -231,20 +227,20 @@ public final class QuestGui {
         String name        = esc(localizedDesc(lang, uuid, quest));
         double required    = quest.getObjective().getRequiredAmount();
         double current     = pqd.getCurrentProgress();
-        String progressTxt = esc((int) current + " / " + (int) required);
         int    progressPct = required > 0 ? (int) ((current / required) * 100) : 100;
+        String progressTxt = esc((int) current + "/" + (int) required + " (" + progressPct + "%)");
         String reward      = esc("+" + MessageUtil.formatCoins(quest.getReward().getBaseCoins()) + "$");
         String btnText     = esc(L(lang, uuid, "gui.btn.abandon"));
 
         return """
-            <div style="background-color: #1a1a2e(0.85); padding: 8; layout-mode: Top;">
+            <div style="background-color: #1a1a2e(0.85); padding: 4 8; layout-mode: Top;">
               <div style="layout-mode: Left;">
-                <p style="color: #4CAF50; font-size: 16; font-weight: bold; flex-weight: 1;">%s</p>
-                <p style="color: #FFD700; font-size: 14; font-weight: bold;">%s</p>
+                <p style="color: #4CAF50; font-size: 14; font-weight: bold; flex-weight: 1;">%s</p>
+                <p style="color: #FFD700; font-size: 13; font-weight: bold;">%s</p>
               </div>
-              <p style="color: #cccccc; font-size: 13;">%s</p>
-              <div style="layout-mode: Left; padding-top: 4;">
-                <progress value="%d" max="100" style="flex-weight: 1; anchor-height: 14;"></progress>
+              <div style="layout-mode: Left;">
+                <p style="color: #cccccc; font-size: 12; flex-weight: 1;">%s</p>
+                <progress value="%d" max="100" style="anchor-width: 120; anchor-height: 12;"></progress>
                 <button id="%s" class="small-tertiary-button">%s</button>
               </div>
             </div>

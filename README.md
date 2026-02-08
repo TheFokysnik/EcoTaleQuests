@@ -2,10 +2,10 @@
 
 **Daily & Weekly quest system for Hytale servers**
 
-Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation, level-scaled rewards, an interactive GUI panel, and real-time chat progress notifications.
+Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **scrollable GUI panel**, fully localized quest names, and real-time chat progress notifications.
 
 ![Hytale Server Mod](https://img.shields.io/badge/Hytale-Server%20Mod-0ea5e9?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.0.0-10b981?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.0.1-10b981?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17+-f97316?style=for-the-badge&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-a855f7?style=for-the-badge)
 ![Ecotale](https://img.shields.io/badge/Ecotale-1.0.7-6366f1?style=for-the-badge)
@@ -19,23 +19,23 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 
 | Feature | Description |
 |:--------|:------------|
-| 📋 **Daily Quests** | Up to 5 fresh quests every day from a generated pool |
-| 📅 **Weekly Quests** | Up to 2 challenging weekly quests with bigger rewards |
-| ⚔️ **Kill Mobs** | Quests for specific mob types with kill count targets |
-| ⛏️ **Mine Ores** | Quests for mining copper, iron, gold, cobalt and more |
-| 🪓 **Chop Wood** | Quests for harvesting various tree types |
-| 🌾 **Harvest Crops** | Quests for farming wheat, pumpkins, berries and more |
-| 💰 **Earn Currency** | Meta-quests — earn a total amount of currency |
+| 📋 **Daily Quests** | Up to 10 fresh quests every day from a generated pool (4 active at once) |
+| 📅 **Weekly Quests** | Up to 5 weekly quests with bigger rewards (2 active at once) |
+| ⚔️ **Kill Mobs** | 11 mob types — zombie, skeleton, spider, trork, kweebec, scarrak, feran, outlander, raptor, magma golem + **any mob** wildcard |
+| ⛏️ **Mine Ores** | 8 ore types — copper, iron, silver, gold, cobalt, emerald, mythril + **any ore** wildcard |
+| 🪓 **Chop Wood** | 7 tree types — oak, birch, pine, willow, redwood, jungle + **any wood** wildcard |
+| 🌾 **Harvest Crops** | 10 crop types — wheat, potato, carrot, berry, tomato, onion, pumpkin, corn, melon + **any crop** wildcard |
+| 💰 **Earn Currency** | Meta-quests — earn a total amount of currency from any source |
 | ✨ **Gain XP** | Meta-quests — gain RPG experience from any source |
-| 🖥️ **GUI Panel** | Interactive quest panel via HyUI with Daily/Weekly/Active tabs |
-| 📊 **Chat Progress** | Notifications on every action (mined ore → `[Q] Mine copper ore: 3/22`) |
-| 🎲 **Auto-Generation** | Quest pools are generated automatically from config templates |
+| 🎯 **Wildcard Targets** | `any_mob`, `any_ore`, `any_wood`, `any_crop` — match any action of that type |
+| 🖥️ **GUI Panel** | Scrollable quest panel via HyUI with Daily/Weekly/Active tabs |
+| 📊 **Localized Progress** | Fully translated quest names in chat (e.g. `[Q] Добыть: Железо: 3/22`) |
+| 🎲 **Auto-Generation** | 46+ quest candidates, pools generated automatically each day/week |
 | 📈 **Level Scaling** | Quest difficulty and rewards scale with player RPG level |
 | 🏅 **Milestone Alerts** | Additional notifications at 25%, 50%, 75% progress |
-| 🛡️ **Abuse Protection** | Accept cooldowns, world filtering, expiry enforcement |
+| 🛡️ **Abuse Protection** | Accept cooldowns, world filtering, duplicate prevention, expiry enforcement |
 | 💾 **JSON Storage** | Per-player quest data saved as JSON files |
-| 🔌 **Ecotale API** | Uses Ecotale for economy operations and earnings tracking |
-| 🌍 **Localization** | RU / EN with per-player language switching |
+| 🌍 **Localization** | RU / EN — all quest names, targets, and UI elements fully translated |
 | 🔧 **Hot Reload** | `/quests reload` — no restart needed |
 
 ## 📦 Requirements
@@ -43,7 +43,7 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 | Dependency | Version | Required | Description |
 |:-----------|:--------|:--------:|:------------|
 | [Ecotale](https://curseforge.com/hytale/mods/ecotale) | ≥ 1.0.7 | ✅ | Economy & currency (balance, deposit, withdraw) |
-| [HyUI](https://github.com/MineInAbyss/HyUI) | ≥ 0.8.0 | ❌ | GUI quest panel (optional) |
+| [HyUI](https://github.com/MineInAbyss/HyUI) | ≥ 0.8.0 | ❌ | Scrollable GUI quest panel (optional) |
 | [RPG Leveling](https://www.curseforge.com/hytale/mods/rpg-leveling-and-stats) | ≥ 0.2.0 | ❌ | XP quests, mob kills, reward scaling |
 
 > [!TIP]
@@ -54,7 +54,7 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 
 ```bash
 # 1. Copy JAR files to the server's mods/ folder
-cp EcoTaleQuests-1.0.0.jar /server/mods/
+cp EcoTaleQuests-1.0.1.jar /server/mods/
 
 # 2. Make sure Ecotale-1.0.7.jar is also in mods/
 # 3. Start the server — config & lang files are created automatically
@@ -84,13 +84,13 @@ nano mods/com.crystalrealm_EcoTaleQuests/EcoTaleQuests.json
 
 ## 🖥️ GUI Panel
 
-Interactive panel via HyUI with three tabs:
+Interactive scrollable panel via HyUI with three tabs:
 
 - **Daily** — available daily quests with an "Accept" button
 - **Weekly** — available weekly quests with an "Accept" button
 - **Active** — current quests with a progress bar and "Abandon" button
 
-Open with `/quests gui`. The panel auto-refreshes after accepting or abandoning a quest.
+Open with `/quests gui`. The panel auto-refreshes after accepting or abandoning a quest. Quest cards use a compact layout, and the content area scrolls vertically when quests don't fit on screen.
 
 ## 🔐 Permissions
 
@@ -121,109 +121,139 @@ Config file: `mods/com.crystalrealm_EcoTaleQuests/EcoTaleQuests.json`
 ```json
 {
   "General": {
-    "debug": false,
-    "defaultLanguage": "ru",
-    "autoSaveIntervalMinutes": 5
+    "DebugMode": false,
+    "Language": "ru",
+    "NotifyOnProgress": true,
+    "NotifyOnComplete": true,
+    "AutoSaveIntervalMinutes": 5
   },
   "QuestLimits": {
-    "maxActiveDailyQuests": 3,
-    "maxActiveWeeklyQuests": 1,
-    "dailyPoolSize": 5,
-    "weeklyPoolSize": 2,
-    "dailyResetHour": 6,
-    "weeklyResetDay": "MONDAY"
+    "MaxDailyActive": 4,
+    "MaxWeeklyActive": 2,
+    "DailyPoolSize": 10,
+    "WeeklyPoolSize": 5,
+    "MaxAbandonPerDay": 3,
+    "DailyResetTime": "00:00",
+    "WeeklyResetDay": "MONDAY"
   }
 }
 ```
 
 | Key | Default | Description |
 |:----|:--------|:------------|
-| `maxActiveDailyQuests` | 3 | Max daily quests a player can have active at once |
-| `maxActiveWeeklyQuests` | 1 | Max weekly quests active at once |
-| `dailyPoolSize` | 5 | How many daily quests are generated each day |
-| `weeklyPoolSize` | 2 | How many weekly quests are generated each week |
-| `dailyResetHour` | 6 | Hour (0–23) when daily pool refreshes |
-| `weeklyResetDay` | MONDAY | Day of week for weekly pool refresh |
+| `MaxDailyActive` | 4 | Max daily quests a player can have active at once |
+| `MaxWeeklyActive` | 2 | Max weekly quests active at once |
+| `DailyPoolSize` | 10 | How many daily quests are generated each day |
+| `WeeklyPoolSize` | 5 | How many weekly quests are generated each week |
+| `MaxAbandonPerDay` | 3 | Max quest abandonments per day |
+| `DailyResetTime` | 00:00 | Time when daily pool refreshes |
+| `WeeklyResetDay` | MONDAY | Day of week for weekly pool refresh |
 
 ### 🎲 Quest Generation Templates
 
-Each template defines a quest that can appear in the generated pool:
+Each template defines a quest candidate with daily/weekly amount ranges and minimum player level:
 
 ```json
 {
   "Generation": {
-    "mobTemplates": [
-      { "target": "Kweebec",     "minAmount": 5,  "maxAmount": 15 },
-      { "target": "Trork",       "minAmount": 3,  "maxAmount": 10 },
-      { "target": "Scarak",      "minAmount": 5,  "maxAmount": 20 },
-      { "target": "Feran",       "minAmount": 3,  "maxAmount": 12 },
-      { "target": "Fen_Stalker", "minAmount": 2,  "maxAmount": 8  },
-      { "target": "Void_Dragon", "minAmount": 1,  "maxAmount": 3  }
-    ],
-    "oreTemplates": [
-      { "target": "copper", "minAmount": 10, "maxAmount": 30 },
-      { "target": "iron",   "minAmount": 8,  "maxAmount": 25 },
-      { "target": "gold",   "minAmount": 5,  "maxAmount": 15 },
-      { "target": "cobalt", "minAmount": 3,  "maxAmount": 10 }
-    ],
-    "woodTemplates": [
-      { "target": "oak",    "minAmount": 15, "maxAmount": 40 },
-      { "target": "birch",  "minAmount": 15, "maxAmount": 40 },
-      { "target": "pine",   "minAmount": 10, "maxAmount": 30 },
-      { "target": "ebony",  "minAmount": 5,  "maxAmount": 15 }
-    ],
-    "cropTemplates": [
-      { "target": "wheat",   "minAmount": 20, "maxAmount": 50 },
-      { "target": "pumpkin", "minAmount": 10, "maxAmount": 30 },
-      { "target": "berry",   "minAmount": 15, "maxAmount": 40 }
-    ]
+    "KillMobs": {
+      "any_mob":     { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 50,  "WeeklyMax": 150, "MinLevel": 0  },
+      "zombie":      { "DailyMin": 5,  "DailyMax": 15, "WeeklyMin": 30,  "WeeklyMax": 80,  "MinLevel": 0  },
+      "skeleton":    { "DailyMin": 5,  "DailyMax": 15, "WeeklyMin": 25,  "WeeklyMax": 70,  "MinLevel": 0  },
+      "kweebec":     { "DailyMin": 4,  "DailyMax": 12, "WeeklyMin": 20,  "WeeklyMax": 60,  "MinLevel": 3  },
+      "scarrak":     { "DailyMin": 3,  "DailyMax": 8,  "WeeklyMin": 12,  "WeeklyMax": 40,  "MinLevel": 8  },
+      "feran":       { "DailyMin": 3,  "DailyMax": 10, "WeeklyMin": 15,  "WeeklyMax": 50,  "MinLevel": 5  },
+      "magma_golem": { "DailyMin": 1,  "DailyMax": 4,  "WeeklyMin": 5,   "WeeklyMax": 20,  "MinLevel": 20 }
+    },
+    "MineOres": {
+      "any_ore":  { "DailyMin": 15, "DailyMax": 50, "WeeklyMin": 80,  "WeeklyMax": 250, "MinLevel": 0  },
+      "copper":   { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 50,  "WeeklyMax": 150, "MinLevel": 0  },
+      "iron":     { "DailyMin": 8,  "DailyMax": 25, "WeeklyMin": 40,  "WeeklyMax": 120, "MinLevel": 5  },
+      "silver":   { "DailyMin": 6,  "DailyMax": 20, "WeeklyMin": 30,  "WeeklyMax": 100, "MinLevel": 8  },
+      "gold":     { "DailyMin": 5,  "DailyMax": 15, "WeeklyMin": 25,  "WeeklyMax": 80,  "MinLevel": 10 },
+      "emerald":  { "DailyMin": 2,  "DailyMax": 8,  "WeeklyMin": 10,  "WeeklyMax": 40,  "MinLevel": 25 },
+      "mythril":  { "DailyMin": 2,  "DailyMax": 6,  "WeeklyMin": 10,  "WeeklyMax": 30,  "MinLevel": 30 }
+    },
+    "ChopWood": {
+      "any_wood": { "DailyMin": 20, "DailyMax": 60, "WeeklyMin": 100, "WeeklyMax": 300, "MinLevel": 0  },
+      "oak":      { "DailyMin": 15, "DailyMax": 40, "WeeklyMin": 80,  "WeeklyMax": 200, "MinLevel": 0  },
+      "willow":   { "DailyMin": 8,  "DailyMax": 25, "WeeklyMin": 50,  "WeeklyMax": 120, "MinLevel": 5  },
+      "jungle":   { "DailyMin": 4,  "DailyMax": 12, "WeeklyMin": 25,  "WeeklyMax": 70,  "MinLevel": 12 }
+    },
+    "HarvestCrops": {
+      "any_crop": { "DailyMin": 15, "DailyMax": 40, "WeeklyMin": 80,  "WeeklyMax": 200, "MinLevel": 0  },
+      "wheat":    { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 60,  "WeeklyMax": 150, "MinLevel": 0  },
+      "berry":    { "DailyMin": 8,  "DailyMax": 20, "WeeklyMin": 40,  "WeeklyMax": 100, "MinLevel": 3  },
+      "tomato":   { "DailyMin": 6,  "DailyMax": 18, "WeeklyMin": 35,  "WeeklyMax": 90,  "MinLevel": 5  },
+      "melon":    { "DailyMin": 4,  "DailyMax": 12, "WeeklyMin": 20,  "WeeklyMax": 50,  "MinLevel": 8  }
+    },
+    "EarnCoins": { "DailyMin": 100, "DailyMax": 500,  "WeeklyMin": 500,  "WeeklyMax": 2500, "MinLevel": 0 },
+    "GainXP":    { "DailyMin": 50,  "DailyMax": 200,  "WeeklyMin": 200,  "WeeklyMax": 1000, "MinLevel": 0 }
   }
 }
 ```
 
-The generator picks from these templates randomly, applies level scaling to amounts, and creates quest objectives.
+> [!NOTE]
+> **Wildcard targets** (`any_mob`, `any_ore`, `any_wood`, `any_crop`) match **any** action of that type. For example, `any_ore` counts progress when the player mines copper, iron, gold, or any other ore.
+
+The generator picks from these templates randomly, applies level scaling to amounts, and creates quest objectives. With 46+ candidates across 6 quest types, players see varied quests every day.
 
 ### 💰 Rewards
 
 ```json
 {
   "Rewards": {
-    "dailyBaseCoins": 15.0,
-    "weeklyBaseCoins": 75.0,
-    "bonusXpPerQuest": 50,
-    "levelScalingFactor": 0.08,
-    "vipMultiplier": 1.25,
-    "premiumMultiplier": 1.5
+    "BaseDailyCoins": 50.0,
+    "BaseWeeklyCoins": 200.0,
+    "BaseDailyXP": 25,
+    "BaseWeeklyXP": 100,
+    "LevelScalingFactor": 0.02,
+    "MaxLevelMultiplier": 3.0,
+    "DifficultyMultipliers": {
+      "kill_mob": 1.0,
+      "mine_ore": 0.8,
+      "chop_wood": 0.7,
+      "harvest_crop": 0.6,
+      "earn_coins": 1.2,
+      "gain_xp": 1.1
+    }
   }
 }
 ```
 
 | Key | Default | Description |
 |:----|:--------|:------------|
-| `dailyBaseCoins` | 15.0 | Base currency reward for daily quests |
-| `weeklyBaseCoins` | 75.0 | Base currency reward for weekly quests |
-| `bonusXpPerQuest` | 50 | Bonus RPG XP per completed quest |
-| `levelScalingFactor` | 0.08 | Reward multiplier per player level (level × factor) |
+| `BaseDailyCoins` | 50.0 | Base currency reward for daily quests |
+| `BaseWeeklyCoins` | 200.0 | Base currency reward for weekly quests |
+| `BaseDailyXP` | 25 | Base RPG XP reward for daily quests |
+| `BaseWeeklyXP` | 100 | Base RPG XP reward for weekly quests |
+| `LevelScalingFactor` | 0.02 | Reward multiplier per player level |
+| `MaxLevelMultiplier` | 3.0 | Maximum reward multiplier cap |
+| `DifficultyMultipliers` | — | Per-quest-type reward scaling |
 
-**Reward formula:** `Final Reward = Base × (1 + level × factor)`
+**Reward formula:** `Final Reward = Base × DifficultyMultiplier × min(1 + level × factor, MaxLevelMultiplier)`
 
 ### 🛡️ Protection
 
 ```json
 {
   "Protection": {
-    "acceptCooldownSeconds": 30,
-    "allowedWorlds": [],
-    "blockAbuseInCreative": true
+    "RequireOnline": true,
+    "MinPlaytimeMinutes": 5,
+    "QuestAcceptCooldownMs": 1000,
+    "PreventDuplicateTypes": true,
+    "AllowedWorlds": []
   }
 }
 ```
 
 | Key | Default | Description |
 |:----|:--------|:------------|
-| `acceptCooldownSeconds` | 30 | Cooldown between accepting quests |
-| `allowedWorlds` | `[]` (all) | Restrict quest progress to specific worlds |
-| `blockAbuseInCreative` | true | Prevent quest progress in creative mode |
+| `RequireOnline` | true | Player must be online to track progress |
+| `MinPlaytimeMinutes` | 5 | Min playtime before accepting quests |
+| `QuestAcceptCooldownMs` | 1000 | Cooldown between accepting quests (ms) |
+| `PreventDuplicateTypes` | true | Prevent having two quests of same type active |
+| `AllowedWorlds` | `[]` (all) | Restrict quest progress to specific worlds |
 
 ## 📝 Quest Lifecycle
 
@@ -241,10 +271,10 @@ The generator picks from these templates randomly, applies level scaling to amou
                             └──────────────┘
 ```
 
-1. **Pool Generation** — Server generates daily/weekly quest pools from config templates
-2. **Browse & Accept** — Players view available quests (GUI or chat) and accept
+1. **Pool Generation** — Server generates daily/weekly quest pools from config templates (10 daily, 5 weekly)
+2. **Browse & Accept** — Players view available quests with localized names (GUI or chat) and accept
 3. **Progress Tracking** — Actions automatically tracked via ECS events and balance polling
-4. **Notifications** — Players receive chat messages on every action + milestones at 25/50/75%
+4. **Notifications** — Localized progress messages in chat + milestones at 25/50/75%
 5. **Completion & Reward** — At 100%, currency is deposited via Ecotale API + bonus XP granted
 6. **Expiry** — Unfinished quests expire at the next daily/weekly reset
 
@@ -257,7 +287,7 @@ EcoTaleQuests/
 │   │                               #            HARVEST_CROP, EARN_COINS, GAIN_XP)
 │   ├── QuestPeriod.java            #   DAILY / WEEKLY
 │   ├── QuestStatus.java            #   AVAILABLE → ACTIVE → COMPLETED
-│   ├── QuestObjective.java         #   Type + target + required amount
+│   ├── QuestObjective.java         #   Type + target + required amount + wildcard support
 │   ├── QuestReward.java            #   Base currency + bonus XP
 │   ├── Quest.java                  #   Immutable quest definition
 │   └── PlayerQuestData.java        #   Per-player progress tracking
@@ -270,7 +300,7 @@ EcoTaleQuests/
 │   └── LangManager.java            #   RU/EN localization with placeholders
 │
 ├── generator/
-│   └── QuestGenerator.java         #   Pool generation from templates
+│   └── QuestGenerator.java         #   Pool generation from 46+ candidates
 │
 ├── reward/
 │   └── QuestRewardCalculator.java  #   Reward calculation & grant (Ecotale API)
@@ -280,7 +310,7 @@ EcoTaleQuests/
 │   └── JsonQuestStorage.java       #   JSON file-based persistence
 │
 ├── tracker/
-│   └── QuestTracker.java           #   Central quest management & progress
+│   └── QuestTracker.java           #   Central quest management, localized names & progress
 │
 ├── listeners/
 │   ├── MobKillQuestListener.java   #   RPG Leveling API: mobs + XP
@@ -288,7 +318,7 @@ EcoTaleQuests/
 │   └── CoinQuestListener.java     #   Balance polling via Ecotale API
 │
 ├── gui/
-│   └── QuestGui.java               #   HyUI GUI panel with tabs
+│   └── QuestGui.java               #   HyUI scrollable GUI panel with tabs
 │
 ├── protection/
 │   └── QuestAbuseGuard.java        #   Cooldowns & world filtering
@@ -298,7 +328,7 @@ EcoTaleQuests/
 │
 ├── util/
 │   ├── PluginLogger.java           #   SLF4J-compatible logging
-│   ├── MiniMessageParser.java      #   MiniMessage → Hytale JSON
+│   ├── MiniMessageParser.java      #   MiniMessage → Hytale JSON + stripTags()
 │   └── MessageUtil.java            #   Formatting, progress bar, PlayerRef cache
 │
 └── EcoTaleQuestsPlugin.java        #   Main entry point & lifecycle
@@ -313,7 +343,9 @@ EcoTaleQuests/
 - **RPG API Auto-detect** — Tries `get()`, `getInstance()`, `getAPI()` methods for cross-version compatibility
 - **JSON Storage** — File-based persistence (`quests/` for pools, `players/<uuid>.json` for progress) — no database required
 - **Immutable Quests** — `Quest` objects are immutable; only `PlayerQuestData` tracks mutable progress state
-- **HyUI GUI** — Tabbed quest panel with accept/abandon buttons, progress bars, auto-refresh
+- **HyUI Scrollable GUI** — Tabbed quest panel with `topscrolling` layout, compact quest cards, accept/abandon buttons, progress bars, auto-refresh
+- **Wildcard Matching** — `QuestObjective.matches()` supports `any_*` targets that match any action of their type
+- **Localized Quest Names** — `QuestTracker.localizedQuestDesc()` builds player-specific quest descriptions from `quest.desc.*` + `target.*` lang keys — no raw IDs shown to players
 
 ## 🔌 EcoTale Ecosystem
 
@@ -334,10 +366,13 @@ Built-in support for Russian and English. Language files are auto-generated on f
 /quests lang en
 ```
 
-**92 localization keys**, including:
-- `quest.completed` / `quest.action_progress` — progress and completion
+**All quest names are fully localized.** Players see translated quest descriptions (`Добыть: Железо ×24`, `Убить: Любые мобы ×22`) in both GUI and chat — never raw internal IDs.
+
+**100+ localization keys**, including:
+- `quest.completed` / `quest.action_progress` — progress and completion messages
 - `quest.desc.*` — descriptions for all 6 quest types
-- `target.*` — 18 targets (mobs, ores, trees, crops)
+- `quest.type.*` — category names (Мобы, Руда, Дерево, Урожай, Валюта, Опыт)
+- `target.*` — 40+ targets (mobs, ores, trees, crops) including wildcards (Любые мобы, Любая руда…)
 - `cmd.*` — command feedback
 - `gui.*` — GUI panel elements
 
@@ -362,7 +397,7 @@ cd EcoTaleQuests
 # Build (requires HyUI-0.8.1-all.jar in libs/)
 ./gradlew clean jar
 
-# Output: build/libs/EcoTaleQuests-1.0.0.jar
+# Output: build/libs/EcoTaleQuests-1.0.1.jar
 ```
 
 ## 📄 License

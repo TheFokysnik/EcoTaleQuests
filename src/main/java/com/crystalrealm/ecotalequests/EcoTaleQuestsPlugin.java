@@ -42,12 +42,12 @@ import java.util.concurrent.TimeUnit;
  *   <li>Anti-abuse: cooldown, лимиты отмен, дедупликация</li>
  * </ul>
  *
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class EcoTaleQuestsPlugin extends JavaPlugin {
 
     private static final PluginLogger LOGGER = PluginLogger.forEnclosingClass();
-    private static final String VERSION = "1.0.0";
+    private static final String VERSION = "1.0.1";
 
     // ── Services ────────────────────────────────────────────────
     private ConfigManager configManager;
