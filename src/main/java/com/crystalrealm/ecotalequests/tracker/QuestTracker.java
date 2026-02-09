@@ -242,17 +242,26 @@ public class QuestTracker {
         LOGGER.info("Player {} completed quest {} ({})",
                 playerUuid, quest.getShortId(), quest.getName());
 
+        // Resolve VIP multiplier from permissions
+        QuestRewardCalculator.VipResult vip = rewardCalculator.resolveVipMultiplier(playerUuid);
+        double vipMult = vip.multiplier();
+
         // Grant reward
-        boolean rewarded = rewardCalculator.grantReward(playerUuid, quest, playerLevel);
+        boolean rewarded = rewardCalculator.grantReward(playerUuid, quest, playerLevel, vipMult);
 
         // Always notify on completion, regardless of reward success
-        double finalCoins = rewardCalculator.calculateFinalReward(quest, playerLevel);
+        double finalCoins = rewardCalculator.calculateFinalReward(quest, playerLevel, vipMult);
         String displayName = localizedQuestDesc(playerUuid, quest);
         String msg;
         if (rewarded) {
+            String vipSuffix = vip.displayName() != null
+                    ? " <gray>(<yellow>" + vip.displayName() + " ×"
+                      + String.format("%.2f", vipMult) + "</yellow>)</gray>"
+                    : "";
             msg = langManager.getForPlayer(playerUuid, "quest.completed",
                     "name", displayName,
-                    "reward", MessageUtil.formatCoins(finalCoins));
+                    "reward", MessageUtil.formatCoins(finalCoins),
+                    "vip", vipSuffix);
         } else {
             // Reward failed (economy unavailable) — still notify completion
             msg = langManager.getForPlayer(playerUuid, "quest.completed_no_reward",

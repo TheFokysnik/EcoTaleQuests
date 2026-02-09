@@ -1,7 +1,7 @@
 {
   "prefix": "<dark_gray>[<gold>Q<dark_gray>] ",
 
-  "quest.completed": "<green>[+] <gold>{name}</gold> <green>— completed! <yellow>+{reward} currency",
+  "quest.completed": "<green>[+] <gold>{name}</gold> <green>— completed! <yellow>+{reward} currency{vip}",
   "quest.completed_no_reward": "<green>[+] <gold>{name}</gold> <green>— completed!",
   "quest.progress": "<gray>[Q] <white>{name}<gray>: <green>{current}<gray>/<white>{required} {bar}",
   "quest.action_progress": "<gray>[Q] <gold>{name}<gray>: <green>{current}<gray>/<white>{required}",

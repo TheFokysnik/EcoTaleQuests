@@ -5,7 +5,7 @@
 Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **scrollable GUI panel**, fully localized quest names, and real-time chat progress notifications.
 
 ![Hytale Server Mod](https://img.shields.io/badge/Hytale-Server%20Mod-0ea5e9?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.0.1-10b981?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.1.0-10b981?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17+-f97316?style=for-the-badge&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-a855f7?style=for-the-badge)
 ![Ecotale](https://img.shields.io/badge/Ecotale-1.0.7-6366f1?style=for-the-badge)
@@ -54,7 +54,7 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 
 ```bash
 # 1. Copy JAR files to the server's mods/ folder
-cp EcoTaleQuests-1.0.1.jar /server/mods/
+cp EcoTaleQuests-1.1.0.jar /server/mods/
 
 # 2. Make sure Ecotale-1.0.7.jar is also in mods/
 # 3. Start the server — config & lang files are created automatically
@@ -100,10 +100,11 @@ ecotalequests.command.quests   # /quests, available, accept, abandon, info, gui
 ecotalequests.command.stats    # /quests stats
 ```
 
-**VIP / Premium:**
+**VIP Tiers** (configurable in `VipTiers`):
 ```yaml
-ecotalequests.multiplier.vip       # ×1.25 quest reward multiplier
-ecotalequests.multiplier.premium   # ×1.50 quest reward multiplier
+ecotalequests.multiplier.vip        # ×1.25 quest reward multiplier (VIP)
+ecotalequests.multiplier.mvp        # ×1.50 quest reward multiplier (MVP)
+ecotalequests.multiplier.mvp_plus   # ×2.00 quest reward multiplier (MVP+)
 ```
 
 **Admin:**
@@ -231,7 +232,30 @@ The generator picks from these templates randomly, applies level scaling to amou
 | `MaxLevelMultiplier` | 3.0 | Maximum reward multiplier cap |
 | `DifficultyMultipliers` | — | Per-quest-type reward scaling |
 
-**Reward formula:** `Final Reward = Base × DifficultyMultiplier × min(1 + level × factor, MaxLevelMultiplier)`
+**Reward formula:** `Final Reward = Base × DifficultyMultiplier × min(1 + level × factor, MaxLevelMultiplier) × VipMultiplier`
+
+### 🌟 VIP Tiers
+
+```json
+{
+  "VipTiers": {
+    "Tiers": [
+      { "Permission": "ecotalequests.multiplier.mvp_plus", "Multiplier": 2.0, "DisplayName": "MVP+" },
+      { "Permission": "ecotalequests.multiplier.mvp",      "Multiplier": 1.5, "DisplayName": "MVP" },
+      { "Permission": "ecotalequests.multiplier.vip",      "Multiplier": 1.25, "DisplayName": "VIP" }
+    ]
+  }
+}
+```
+
+| Key | Default | Description |
+|:----|:--------|:------------|
+| `Tiers` | 3 tiers | Ordered list of VIP tiers (first match wins — put highest tier first) |
+| `Permission` | — | Permission node to check for this tier |
+| `Multiplier` | — | Reward multiplier applied to quest coins |
+| `DisplayName` | — | Name shown in reward message (e.g., "MVP+ ×2.00") |
+
+> **Note:** Tiers are checked top-to-bottom; the first matching permission is used. If a player has no VIP permission, multiplier defaults to ×1.0.
 
 ### 🛡️ Protection
 
@@ -378,6 +402,20 @@ Built-in support for Russian and English. Language files are auto-generated on f
 
 **Custom translations:** Edit the generated JSON files in `mods/com.crystalrealm_EcoTaleQuests/lang/`
 
+## 📝 Changelog
+
+### v1.1.0
+- **Fix:** Mob kill quests not tracking kills (skeletons, kweebecs, and other mobs were not counted)
+- **Fix:** Quest GUI text rendering issues with special formatting
+- **New:** VIP reward multipliers for quest completion
+- **New:** Native ECS death system for reliable mob kill detection
+- **Improved:** Overall quest tracking stability
+
+### v1.0.1
+- Initial release
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -397,7 +435,7 @@ cd EcoTaleQuests
 # Build (requires HyUI-0.8.1-all.jar in libs/)
 ./gradlew clean jar
 
-# Output: build/libs/EcoTaleQuests-1.0.1.jar
+# Output: build/libs/EcoTaleQuests-1.1.0.jar
 ```
 
 ## 📄 License

@@ -80,6 +80,13 @@
       "gain_xp": 1.1
     }
   },
+  "VipTiers": {
+    "Tiers": [
+      { "Permission": "ecotalequests.multiplier.mvp_plus", "Multiplier": 2.0, "DisplayName": "MVP+" },
+      { "Permission": "ecotalequests.multiplier.mvp", "Multiplier": 1.5, "DisplayName": "MVP" },
+      { "Permission": "ecotalequests.multiplier.vip", "Multiplier": 1.25, "DisplayName": "VIP" }
+    ]
+  },
   "Protection": {
     "RequireOnline": true,
     "MinPlaytimeMinutes": 5,

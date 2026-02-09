@@ -1,11 +1,9 @@
 package com.crystalrealm.ecotalequests.listeners;
 
-import com.crystalrealm.ecotalequests.model.QuestType;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
 
-import com.hypixel.hytale.event.EventRegistry;
 import org.zuxaw.plugin.api.*;
 
 import javax.annotation.Nonnull;
@@ -13,10 +11,16 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 /**
- * Слушатель убийств мобов для обновления квестов типа KILL_MOB.
+ * Listener RPGLevelingAPI for XP tracking.
  *
- * <p>Интегрируется через RPG Leveling API — тот же паттерн,
- * что в EcoTaleIncome.</p>
+ * <p>Tracks GAIN_XP quests via ExperienceGainedEvent.
+ * <b>KILL_MOB quests are handled separately by {@link MobDeathQuestSystem}</b>,
+ * which uses the native ECS DeathSystems.OnDeathSystem
+ * with direct access to NPCEntity.getNPCTypeId().</p>
+ *
+ * <p>Before v1.1.0 this class also attempted to track mob kills,
+ * but EntityKillContext contains no entity type info -
+ * only UUID and level.</p>
  */
 public class MobKillQuestListener {
 
@@ -30,14 +34,15 @@ public class MobKillQuestListener {
     }
 
     /**
-     * Регистрирует слушатель.
+     * Registers the XP event listener.
      *
-     * @param rpgApi RPG Leveling API (может быть null)
+     * @param rpgApi RPG Leveling API (may be null)
      */
     public void register(@Nullable RPGLevelingAPI rpgApi) {
         if (rpgApi == null) {
-            LOGGER.warn("RPG Leveling API not available — mob kill quest tracking disabled.");
-            LOGGER.warn("Quests of type KILL_MOB will not track progress without RPG Leveling.");
+            LOGGER.warn("RPG Leveling API not available - XP quest tracking disabled.");
+            LOGGER.warn("Quests of type GAIN_XP will not track progress without RPG Leveling.");
+            LOGGER.info("KILL_MOB quests use native DeathSystem - no RPG API required.");
             return;
         }
 
@@ -46,63 +51,30 @@ public class MobKillQuestListener {
             UUID playerUuid = playerRef.getUuid();
             int playerLevel = resolvePlayerLevel(event);
 
-            // Кешируем PlayerRef для отправки сообщений
+            // Cache PlayerRef for message sending
             MessageUtil.cachePlayerRef(playerUuid, playerRef);
 
-            // ── GAIN_XP: track all XP gains ──
+            // -- GAIN_XP: track all XP gains --
             double xpAmount = event.getXpAmount();
             if (xpAmount > 0) {
                 questTracker.handleXPGained(playerUuid, xpAmount, playerLevel);
             }
 
-            // ── KILL_MOB: track mob kills ──
-            if (!event.getSource().equals(XPSource.ENTITY_KILL)) return;
-
-            EntityKillContext killCtx = event.getEntityKillContext();
-            if (killCtx == null) return;
-
-            String entityType = resolveEntityName(killCtx);
-
-            questTracker.handleAction(playerUuid, QuestType.KILL_MOB, entityType, 1, playerLevel);
+            // Note: KILL_MOB is NO LONGER handled here.
+            // EntityKillContext has no entity type info (only UUID + level).
+            // MobDeathQuestSystem (DeathSystems.OnDeathSystem) handles
+            // mob kills via NPCEntity.getNPCTypeId() for reliable identification.
         });
 
         registered = true;
-        LOGGER.info("MobKillQuestListener registered via RPG Leveling API.");
+        LOGGER.info("MobKillQuestListener registered via RPG Leveling API (XP tracking only).");
+        LOGGER.info("KILL_MOB tracking delegated to MobDeathQuestSystem (native ECS).");
     }
 
     public boolean isRegistered() { return registered; }
 
     /**
-     * Определяет имя убитой сущности через reflection.
-     */
-    private String resolveEntityName(EntityKillContext killCtx) {
-        // getEntityName()
-        try {
-            java.lang.reflect.Method m = killCtx.getClass().getMethod("getEntityName");
-            Object result = m.invoke(killCtx);
-            if (result instanceof String s && !s.isEmpty()) return s;
-        } catch (Exception ignored) {}
-
-        // getEntityType()
-        try {
-            java.lang.reflect.Method m = killCtx.getClass().getMethod("getEntityType");
-            Object result = m.invoke(killCtx);
-            if (result instanceof String s && !s.isEmpty()) return s;
-            if (result != null) return result.toString();
-        } catch (Exception ignored) {}
-
-        // getPrefabName()
-        try {
-            java.lang.reflect.Method m = killCtx.getClass().getMethod("getPrefabName");
-            Object result = m.invoke(killCtx);
-            if (result instanceof String s && !s.isEmpty()) return s;
-        } catch (Exception ignored) {}
-
-        return "mob";
-    }
-
-    /**
-     * Определяет уровень игрока из события.
+     * Resolves the player level from the event.
      */
     private int resolvePlayerLevel(ExperienceGainedEvent event) {
         try {

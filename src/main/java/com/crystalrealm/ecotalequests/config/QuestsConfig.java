@@ -12,6 +12,7 @@ public class QuestsConfig {
     private QuestLimitsSection QuestLimits = new QuestLimitsSection();
     private GenerationSection Generation = new GenerationSection();
     private RewardsSection Rewards = new RewardsSection();
+    private VipTiersSection VipTiers = new VipTiersSection();
     private ProtectionSection Protection = new ProtectionSection();
 
     // ─── Getters ──────────────────────────────────────────────────
@@ -20,6 +21,7 @@ public class QuestsConfig {
     public QuestLimitsSection getQuestLimits() { return QuestLimits; }
     public GenerationSection getGeneration() { return Generation; }
     public RewardsSection getRewards() { return Rewards; }
+    public VipTiersSection getVipTiers() { return VipTiers; }
     public ProtectionSection getProtection() { return Protection; }
 
     // ═════════════════════════════════════════════════════════════
@@ -134,6 +136,42 @@ public class QuestsConfig {
             double mult = 1.0 + playerLevel * LevelScalingFactor;
             return Math.min(mult, MaxLevelMultiplier);
         }
+    }
+
+    /**
+     * VIP-тиры: список из Permission → Multiplier.
+     * Проверяются сверху вниз, применяется первый подходящий (наивысший приоритет).
+     */
+    public static class VipTiersSection {
+        private List<VipTier> Tiers = new ArrayList<>();
+
+        public VipTiersSection() {
+            // Defaults: MVP_Plus > MVP > VIP > base (1.0)
+            Tiers.add(new VipTier("ecotalequests.multiplier.mvp_plus", 2.0, "MVP+"));
+            Tiers.add(new VipTier("ecotalequests.multiplier.mvp", 1.5, "MVP"));
+            Tiers.add(new VipTier("ecotalequests.multiplier.vip", 1.25, "VIP"));
+        }
+
+        public List<VipTier> getTiers() { return Tiers; }
+    }
+
+    /** Один VIP-тир: permission, множитель наград, отображаемое имя. */
+    public static class VipTier {
+        private String Permission;
+        private double Multiplier;
+        private String DisplayName;
+
+        public VipTier() {}
+
+        public VipTier(String permission, double multiplier, String displayName) {
+            this.Permission = permission;
+            this.Multiplier = multiplier;
+            this.DisplayName = displayName;
+        }
+
+        public String getPermission() { return Permission; }
+        public double getMultiplier() { return Multiplier; }
+        public String getDisplayName() { return DisplayName; }
     }
 
     /** Защита от абьюза. */

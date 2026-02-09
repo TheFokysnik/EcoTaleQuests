@@ -202,7 +202,7 @@ public final class QuestGui {
 
     private static String emptyLabel(LangManager lang, UUID uuid, String key) {
         return "<p style=\"color: #888888; font-size: 14; padding: 20;\">"
-                + esc(L(lang, uuid, key)) + "</p>\n";
+                + esc(MiniMessageParser.stripTags(L(lang, uuid, key))) + "</p>\n";
     }
 
     /** Card for an available (not yet accepted) quest. */

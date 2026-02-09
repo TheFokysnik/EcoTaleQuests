@@ -7,6 +7,7 @@ import com.crystalrealm.ecotalequests.generator.QuestGenerator;
 import com.crystalrealm.ecotalequests.lang.LangManager;
 import com.crystalrealm.ecotalequests.listeners.BlockQuestListener;
 import com.crystalrealm.ecotalequests.listeners.CoinQuestListener;
+import com.crystalrealm.ecotalequests.listeners.MobDeathQuestSystem;
 import com.crystalrealm.ecotalequests.listeners.MobKillQuestListener;
 import com.crystalrealm.ecotalequests.model.QuestPeriod;
 import com.crystalrealm.ecotalequests.protection.QuestAbuseGuard;
@@ -60,6 +61,7 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
 
     // ── Listeners ───────────────────────────────────────────────
     private MobKillQuestListener mobKillListener;
+    private MobDeathQuestSystem mobDeathQuestSystem;
     private BlockQuestListener blockQuestListener;
     private CoinQuestListener coinQuestListener;
 
@@ -112,6 +114,14 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         // 8. Commands
         getCommandRegistry().registerCommand(new QuestsCommandCollection(this));
         LOGGER.info("Registered /quests command.");
+
+        // 9. Register ECS systems (MUST be in setup(), before world starts ticking)
+        mobDeathQuestSystem = new MobDeathQuestSystem(questTracker);
+        getEntityStoreRegistry().registerSystem(mobDeathQuestSystem);
+        LOGGER.info("MobDeathQuestSystem registered (native ECS death tracking).");
+
+        blockQuestListener = new BlockQuestListener(questTracker);
+        blockQuestListener.register(getEntityStoreRegistry());
     }
 
     @Override
@@ -121,13 +131,11 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         // ── RPG Leveling detection ──
         rpgApi = detectRPGLeveling();
 
-        // ── Register listeners ──
+        // ── Register RPG Leveling listener (XP quests) ──
         mobKillListener = new MobKillQuestListener(questTracker);
         mobKillListener.register(rpgApi);
 
-        blockQuestListener = new BlockQuestListener(questTracker);
-        blockQuestListener.register(getEntityStoreRegistry());
-
+        // ── Register coin listener ──
         coinQuestListener = new CoinQuestListener(questTracker);
         coinQuestListener.register();
 
@@ -163,7 +171,8 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
 
         LOGGER.info("═══════════════════════════════════════");
         LOGGER.info("  EcoTaleQuests v{} — STARTED", VERSION);
-        LOGGER.info("  Mob kill tracking: {}", mobKillListener.isRegistered() ? "ACTIVE" : "DISABLED");
+        LOGGER.info("  Mob kill tracking: ACTIVE (native ECS DeathSystem)");
+        LOGGER.info("  XP tracking:       {}", mobKillListener.isRegistered() ? "ACTIVE" : "DISABLED");
         LOGGER.info("  Block tracking:    ACTIVE");
         LOGGER.info("  Coin tracking:     {}", coinQuestListener.isRegistered() ? "ACTIVE" : "DISABLED");
         LOGGER.info("  Daily pool:        {} quests", storage.loadQuestPool(QuestPeriod.DAILY).size());
