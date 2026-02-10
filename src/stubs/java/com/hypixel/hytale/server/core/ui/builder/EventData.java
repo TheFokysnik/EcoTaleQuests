@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
  */
 public class EventData {
 
-    private EventData() {}
+    public EventData() {}
 
     @Nonnull
     public static EventData of(@Nonnull String key, @Nonnull String value) {

@@ -128,11 +128,12 @@ public class QuestTracker {
 
         if (activeCount >= maxActive) return AcceptResult.LIMIT_REACHED;
 
-        // Проверка на дубликат типа
+        // Проверка на дубликат типа (только в рамках одного периода: daily отдельно, weekly отдельно)
         if (config.getProtection().isPreventDuplicateTypes()) {
             boolean hasSameType = active.stream().anyMatch(pq -> {
                 Quest q = storage.getQuest(pq.getQuestId());
-                return q != null && q.getObjective().getType() == quest.getObjective().getType()
+                return q != null && q.getPeriod() == quest.getPeriod()
+                        && q.getObjective().getType() == quest.getObjective().getType()
                         && Objects.equals(q.getObjective().getTarget(), quest.getObjective().getTarget());
             });
             if (hasSameType) return AcceptResult.DUPLICATE_TYPE;

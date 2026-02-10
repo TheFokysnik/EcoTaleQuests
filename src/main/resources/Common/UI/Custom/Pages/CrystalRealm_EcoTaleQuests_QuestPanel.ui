@@ -1,0 +1,277 @@
+$C = "../Common.ui";
+
+@GoldTitle = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 18,
+  TextColor: #ffaa00,
+  RenderBold: true,
+  HorizontalAlignment: Center
+);
+
+@White = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #ffffff
+);
+
+@Gray = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 12,
+  TextColor: #aaaaaa
+);
+
+@SmGray = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 11,
+  TextColor: #aaaaaa
+);
+
+@Value = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #55ff55,
+  RenderBold: true
+);
+
+@Gold = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #ffaa00,
+  RenderBold: true
+);
+
+@Reward = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #ffd700,
+  RenderBold: true
+);
+
+@Error = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #ff4444,
+  RenderBold: true
+);
+
+@Success = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #55ff55,
+  RenderBold: true
+);
+
+@Progress = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 12,
+  TextColor: #aaffaa
+);
+
+$C.@PageOverlay {
+  LayoutMode: Middle;
+
+  $C.@DecoratedContainer {
+    Anchor: (Width: 720, Height: 530);
+
+    #Title {
+      Label #TitleLabel { Style: @GoldTitle; Text: "Quests"; }
+    }
+
+    #Content {
+      LayoutMode: Top;
+      Padding: (Full: 8);
+
+      // ── Banners ────────────────────────────────────────────
+      Group #ErrorBanner { Anchor: (Height: 22); Visible: false;
+        Label #ErrorText { Style: @Error; Text: ""; }
+      }
+      Group #SuccessBanner { Anchor: (Height: 22); Visible: false;
+        Label #SuccessText { Style: @Success; Text: ""; }
+      }
+
+      // ── Tab bar ────────────────────────────────────────────
+      Group {
+        LayoutMode: Left;
+        Anchor: (Height: 34, Bottom: 6);
+        $C.@SecondaryTextButton #TabDaily { Anchor: (Width: 160, Height: 30); Text: "Daily"; }
+        Group { Anchor: (Width: 6); }
+        $C.@SecondaryTextButton #TabWeekly { Anchor: (Width: 160, Height: 30); Text: "Weekly"; }
+        Group { Anchor: (Width: 6); }
+        $C.@SecondaryTextButton #TabActive { Anchor: (Width: 160, Height: 30); Text: "Active"; }
+      }
+
+      // ═══════════════════════════════════════════════════════
+      //  DAILY TAB (10 quest slots: D1–D10)
+      // ═══════════════════════════════════════════════════════
+      Group #DailyContent {
+        FlexWeight: 1;
+        LayoutMode: TopScrolling;
+        ScrollbarStyle: $C.@DefaultScrollbarStyle;
+
+        Label #NoDailyMsg { Style: @Gray; Text: ""; Visible: false; Anchor: (Height: 22); }
+
+        Group #D1 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D1Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D1Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D1Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D2 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D2Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D2Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D2Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D3 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D3Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D3Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D3Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D4 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D4Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D4Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D4Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D5 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D5Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D5Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D5Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D6 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D6Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D6Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D6Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D7 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D7Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D7Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D7Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D8 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D8Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D8Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D8Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D9 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D9Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D9Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D9Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #D10 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #D10Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #D10Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #D10Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════
+      //  WEEKLY TAB (5 quest slots: W1–W5)
+      // ═══════════════════════════════════════════════════════
+      Group #WeeklyContent {
+        FlexWeight: 1;
+        LayoutMode: TopScrolling;
+        Visible: false;
+        ScrollbarStyle: $C.@DefaultScrollbarStyle;
+
+        Label #NoWeeklyMsg { Style: @Gray; Text: ""; Visible: false; Anchor: (Height: 22); }
+
+        Group #W1 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #W1Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #W1Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #W1Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #W2 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #W2Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #W2Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #W2Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #W3 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #W3Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #W3Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #W3Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #W4 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #W4Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #W4Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #W4Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+        Group #W5 { Visible: false; LayoutMode: Left; Anchor: (Height: 32); Padding: (Left: 4, Right: 4);
+          Label #W5Name { Style: @White; FlexWeight: 1; Text: ""; }
+          Label #W5Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          $C.@SecondaryTextButton #W5Btn { Anchor: (Width: 180, Height: 26); Text: ""; }
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════
+      //  ACTIVE TAB (6 quest slots: A1–A6 with progress)
+      // ═══════════════════════════════════════════════════════
+      Group #ActiveContent {
+        FlexWeight: 1;
+        LayoutMode: TopScrolling;
+        Visible: false;
+        ScrollbarStyle: $C.@DefaultScrollbarStyle;
+
+        Label #NoActiveMsg { Style: @Gray; Text: ""; Visible: false; Anchor: (Height: 22); }
+
+        Group #A1 { Visible: false; LayoutMode: Top; Anchor: (Height: 52); Padding: (Left: 4, Right: 4);
+          Group { LayoutMode: Left; Anchor: (Height: 22);
+            Label #A1Name { Style: @White; FlexWeight: 1; Text: ""; }
+            Label #A1Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          }
+          Group { LayoutMode: Left; Anchor: (Height: 24);
+            Label #A1Progress { Style: @Progress; FlexWeight: 1; Text: ""; }
+            $C.@SecondaryTextButton #A1Btn { Anchor: (Width: 180, Height: 22); Text: ""; }
+          }
+        }
+        Group #A2 { Visible: false; LayoutMode: Top; Anchor: (Height: 52); Padding: (Left: 4, Right: 4);
+          Group { LayoutMode: Left; Anchor: (Height: 22);
+            Label #A2Name { Style: @White; FlexWeight: 1; Text: ""; }
+            Label #A2Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          }
+          Group { LayoutMode: Left; Anchor: (Height: 24);
+            Label #A2Progress { Style: @Progress; FlexWeight: 1; Text: ""; }
+            $C.@SecondaryTextButton #A2Btn { Anchor: (Width: 180, Height: 22); Text: ""; }
+          }
+        }
+        Group #A3 { Visible: false; LayoutMode: Top; Anchor: (Height: 52); Padding: (Left: 4, Right: 4);
+          Group { LayoutMode: Left; Anchor: (Height: 22);
+            Label #A3Name { Style: @White; FlexWeight: 1; Text: ""; }
+            Label #A3Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          }
+          Group { LayoutMode: Left; Anchor: (Height: 24);
+            Label #A3Progress { Style: @Progress; FlexWeight: 1; Text: ""; }
+            $C.@SecondaryTextButton #A3Btn { Anchor: (Width: 180, Height: 22); Text: ""; }
+          }
+        }
+        Group #A4 { Visible: false; LayoutMode: Top; Anchor: (Height: 52); Padding: (Left: 4, Right: 4);
+          Group { LayoutMode: Left; Anchor: (Height: 22);
+            Label #A4Name { Style: @White; FlexWeight: 1; Text: ""; }
+            Label #A4Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          }
+          Group { LayoutMode: Left; Anchor: (Height: 24);
+            Label #A4Progress { Style: @Progress; FlexWeight: 1; Text: ""; }
+            $C.@SecondaryTextButton #A4Btn { Anchor: (Width: 180, Height: 22); Text: ""; }
+          }
+        }
+        Group #A5 { Visible: false; LayoutMode: Top; Anchor: (Height: 52); Padding: (Left: 4, Right: 4);
+          Group { LayoutMode: Left; Anchor: (Height: 22);
+            Label #A5Name { Style: @White; FlexWeight: 1; Text: ""; }
+            Label #A5Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          }
+          Group { LayoutMode: Left; Anchor: (Height: 24);
+            Label #A5Progress { Style: @Progress; FlexWeight: 1; Text: ""; }
+            $C.@SecondaryTextButton #A5Btn { Anchor: (Width: 180, Height: 22); Text: ""; }
+          }
+        }
+        Group #A6 { Visible: false; LayoutMode: Top; Anchor: (Height: 52); Padding: (Left: 4, Right: 4);
+          Group { LayoutMode: Left; Anchor: (Height: 22);
+            Label #A6Name { Style: @White; FlexWeight: 1; Text: ""; }
+            Label #A6Reward { Style: @Reward; Anchor: (Width: 90); Text: ""; }
+          }
+          Group { LayoutMode: Left; Anchor: (Height: 24);
+            Label #A6Progress { Style: @Progress; FlexWeight: 1; Text: ""; }
+            $C.@SecondaryTextButton #A6Btn { Anchor: (Width: 180, Height: 22); Text: ""; }
+          }
+        }
+      }
+    }
+  }
+}

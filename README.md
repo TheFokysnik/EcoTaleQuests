@@ -2,14 +2,13 @@
 
 **Daily & Weekly quest system for Hytale servers**
 
-Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **scrollable GUI panel**, fully localized quest names, and real-time chat progress notifications.
+Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **native GUI panel**, an **admin settings panel**, fully localized quest names, and real-time chat progress notifications.
 
 ![Hytale Server Mod](https://img.shields.io/badge/Hytale-Server%20Mod-0ea5e9?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.1.0-10b981?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.2.0-10b981?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17+-f97316?style=for-the-badge&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-a855f7?style=for-the-badge)
 ![Ecotale](https://img.shields.io/badge/Ecotale-1.0.7-6366f1?style=for-the-badge)
-![HyUI](https://img.shields.io/badge/HyUI-0.8.1-e11d48?style=for-the-badge)
 
 [**Getting Started**](#-getting-started) · [**Features**](#-features) · [**Commands**](#-commands) · [**Configuration**](#-configuration) · [**Architecture**](#-architecture)
 
@@ -28,7 +27,8 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 | 💰 **Earn Currency** | Meta-quests — earn a total amount of currency from any source |
 | ✨ **Gain XP** | Meta-quests — gain RPG experience from any source |
 | 🎯 **Wildcard Targets** | `any_mob`, `any_ore`, `any_wood`, `any_crop` — match any action of that type |
-| 🖥️ **GUI Panel** | Scrollable quest panel via HyUI with Daily/Weekly/Active tabs |
+| 🖥️ **GUI Panel** | Native quest panel with Daily/Weekly tabs, accept/abandon/info buttons |
+| 🛠️ **Admin Panel** | Admin settings GUI — toggle modules, reload config, save settings |
 | 📊 **Localized Progress** | Fully translated quest names in chat (e.g. `[Q] Добыть: Железо: 3/22`) |
 | 🎲 **Auto-Generation** | 46+ quest candidates, pools generated automatically each day/week |
 | 📈 **Level Scaling** | Quest difficulty and rewards scale with player RPG level |
@@ -43,18 +43,16 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 | Dependency | Version | Required | Description |
 |:-----------|:--------|:--------:|:------------|
 | [Ecotale](https://curseforge.com/hytale/mods/ecotale) | ≥ 1.0.7 | ✅ | Economy & currency (balance, deposit, withdraw) |
-| [HyUI](https://github.com/MineInAbyss/HyUI) | ≥ 0.8.0 | ❌ | Scrollable GUI quest panel (optional) |
 | [RPG Leveling](https://www.curseforge.com/hytale/mods/rpg-leveling-and-stats) | ≥ 0.2.0 | ❌ | XP quests, mob kills, reward scaling |
 
 > [!TIP]
 > Without RPG Leveling, all players are treated as level 1 — XP and mob kill quests won't track, but all other quest types work normally.
-> Without HyUI, commands work via chat; the GUI panel will be unavailable.
 
 ## 🚀 Getting Started
 
 ```bash
 # 1. Copy JAR files to the server's mods/ folder
-cp EcoTaleQuests-1.1.0.jar /server/mods/
+cp EcoTaleQuests-1.2.0.jar /server/mods/
 
 # 2. Make sure Ecotale-1.0.7.jar is also in mods/
 # 3. Start the server — config & lang files are created automatically
@@ -73,31 +71,43 @@ nano mods/com.crystalrealm_EcoTaleQuests/EcoTaleQuests.json
 | `/quests accept <id>` | Accept a quest from the pool | `ecotalequests.command.quests` |
 | `/quests abandon <id>` | Abandon an active quest | `ecotalequests.command.quests` |
 | `/quests info <id>` | Detailed quest information | `ecotalequests.command.quests` |
-| `/quests gui` | Open the GUI quest panel (HyUI) | `ecotalequests.command.quests` |
-| `/quests stats` | Your quest completion statistics | `ecotalequests.command.stats` |
+| `/quests gui` | Open the quest GUI panel | `ecotalequests.use` |
+| `/quests admin` | Open the admin settings panel | `ecotalequests.admin.settings` |
+| `/quests stats` | Your quest completion statistics | `ecotalequests.use` |
 | `/quests reload` | Reload config & lang files | `ecotalequests.admin.reload` |
-| `/quests lang <en\|ru>` | Switch language | — |
+| `/quests langen` | Switch language to English | — |
+| `/quests langru` | Switch language to Russian | — |
 | `/quests help` | Command reference | — |
 
 > [!NOTE]
 > Quest IDs use short 8-character identifiers (e.g., `a3f7b2c1`).
 
-## 🖥️ GUI Panel
+## 🖥️ GUI Panels
 
-Interactive scrollable panel via HyUI with three tabs:
+### Player Quest Panel (`/quests gui`)
 
-- **Daily** — available daily quests with an "Accept" button
-- **Weekly** — available weekly quests with an "Accept" button
-- **Active** — current quests with a progress bar and "Abandon" button
+Native GUI built on Hytale's `InteractiveCustomUIPage` API with `.ui` layouts:
 
-Open with `/quests gui`. The panel auto-refreshes after accepting or abandoning a quest. Quest cards use a compact layout, and the content area scrolls vertically when quests don't fit on screen.
+- **Daily** tab — available daily quests with Accept / Abandon / Info buttons
+- **Weekly** tab — available weekly quests with Accept / Abandon / Info buttons
+- Progress bar and status displayed for each active quest
+
+The panel auto-refreshes after accepting or abandoning a quest.
+
+### Admin Settings Panel (`/quests admin`)
+
+Admin-only panel for server configuration:
+
+- Toggle modules on/off (mob kills, mining, woodcutting, farming, currency, XP)
+- **Reload** — reload config & lang files
+- **Refresh** — regenerate quest pools
+- **Save** — persist current settings to disk
 
 ## 🔐 Permissions
 
 **Base Permissions** — all players:
 ```yaml
-ecotalequests.command.quests   # /quests, available, accept, abandon, info, gui
-ecotalequests.command.stats    # /quests stats
+ecotalequests.use              # /quests, available, accept, abandon, info, gui, stats
 ```
 
 **VIP Tiers** (configurable in `VipTiers`):
@@ -109,8 +119,9 @@ ecotalequests.multiplier.mvp_plus   # ×2.00 quest reward multiplier (MVP+)
 
 **Admin:**
 ```yaml
-ecotalequests.admin.reload    # /quests reload
-ecotalequests.*               # All permissions
+ecotalequests.admin.reload     # /quests reload
+ecotalequests.admin.settings   # /quests admin (settings panel)
+ecotalequests.*                # All permissions
 ```
 
 ## ⚙️ Configuration
@@ -342,13 +353,19 @@ EcoTaleQuests/
 │   └── CoinQuestListener.java     #   Balance polling via Ecotale API
 │
 ├── gui/
-│   └── QuestGui.java               #   HyUI scrollable GUI panel with tabs
+│   ├── PlayerQuestsGui.java         #   Native quest panel (InteractiveCustomUIPage)
+│   └── AdminQuestsGui.java          #   Admin settings panel (InteractiveCustomUIPage)
+│
+├── assets/
+│   └── ui/
+│       ├── QuestPanel.ui            #   Player GUI layout
+│       └── AdminPanel.ui            #   Admin GUI layout
 │
 ├── protection/
 │   └── QuestAbuseGuard.java        #   Cooldowns & world filtering
 │
 ├── commands/
-│   └── QuestsCommandCollection.java  # 10 subcommands (incl. gui)
+│   └── QuestsCommandCollection.java  # 12 subcommands (incl. gui, admin, langen, langru)
 │
 ├── util/
 │   ├── PluginLogger.java           #   SLF4J-compatible logging
@@ -367,7 +384,7 @@ EcoTaleQuests/
 - **RPG API Auto-detect** — Tries `get()`, `getInstance()`, `getAPI()` methods for cross-version compatibility
 - **JSON Storage** — File-based persistence (`quests/` for pools, `players/<uuid>.json` for progress) — no database required
 - **Immutable Quests** — `Quest` objects are immutable; only `PlayerQuestData` tracks mutable progress state
-- **HyUI Scrollable GUI** — Tabbed quest panel with `topscrolling` layout, compact quest cards, accept/abandon buttons, progress bars, auto-refresh
+- **Native GUI** — Player and admin panels built on `InteractiveCustomUIPage` with `.ui` layouts — no external GUI library needed
 - **Wildcard Matching** — `QuestObjective.matches()` supports `any_*` targets that match any action of their type
 - **Localized Quest Names** — `QuestTracker.localizedQuestDesc()` builds player-specific quest descriptions from `quest.desc.*` + `target.*` lang keys — no raw IDs shown to players
 
@@ -378,6 +395,7 @@ EcoTaleQuests is part of the CrystalRealm EcoTale plugin family:
 | Plugin | Description |
 |:-------|:------------|
 | **[EcoTaleIncome](https://github.com/CrystalRealm/EcoTaleIncome)** | Earn currency through mob kills, mining, woodcutting, farming |
+| **[EcoTaleBanking](https://github.com/CrystalRealm/EcoTaleBanking)** | Banking system — deposits, loans, credit score, interest |
 | **EcoTaleQuests** | Daily & weekly quest system ← *you are here* |
 
 ## 🌍 Localization
@@ -386,8 +404,8 @@ Built-in support for Russian and English. Language files are auto-generated on f
 
 **Per-player switching:**
 ```
-/quests lang ru
-/quests lang en
+/quests langru
+/quests langen
 ```
 
 **All quest names are fully localized.** Players see translated quest descriptions (`Добыть: Железо ×24`, `Убить: Любые мобы ×22`) in both GUI and chat — never raw internal IDs.
@@ -403,6 +421,13 @@ Built-in support for Russian and English. Language files are auto-generated on f
 **Custom translations:** Edit the generated JSON files in `mods/com.crystalrealm_EcoTaleQuests/lang/`
 
 ## 📝 Changelog
+
+### v1.2.0
+- **New:** Native GUI — full migration from HyUI to `InteractiveCustomUIPage` API
+- **New:** Admin settings panel (`/quests admin`) — toggle modules, reload, refresh, save
+- **New:** Language subcommands — `/quests langen`, `/quests langru`
+- **New:** Separate duplicate type checking — daily and weekly quests validated independently
+- **Removed:** HyUI dependency
 
 ### v1.1.0
 - **Fix:** Mob kill quests not tracking kills (skeletons, kweebecs, and other mobs were not counted)
@@ -432,10 +457,10 @@ Built-in support for Russian and English. Language files are auto-generated on f
 git clone https://github.com/CrystalRealm/EcoTaleQuests.git
 cd EcoTaleQuests
 
-# Build (requires HyUI-0.8.1-all.jar in libs/)
+# Build
 ./gradlew clean jar
 
-# Output: build/libs/EcoTaleQuests-1.1.0.jar
+# Output: build/libs/EcoTaleQuests-1.2.0.jar
 ```
 
 ## 📄 License

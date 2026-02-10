@@ -1,7 +1,8 @@
 package com.crystalrealm.ecotalequests.commands;
 
 import com.crystalrealm.ecotalequests.EcoTaleQuestsPlugin;
-import com.crystalrealm.ecotalequests.gui.QuestGui;
+import com.crystalrealm.ecotalequests.gui.AdminQuestsGui;
+import com.crystalrealm.ecotalequests.gui.PlayerQuestsGui;
 import com.crystalrealm.ecotalequests.lang.LangManager;
 import com.crystalrealm.ecotalequests.model.*;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
@@ -37,7 +38,7 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
     /** Keywords that are command/subcommand names (not real arguments). */
     private static final Set<String> COMMAND_KEYWORDS = Set.of(
             "quests", "active", "available", "accept", "abandon",
-            "info", "stats", "reload", "lang", "help", "gui"
+            "info", "stats", "reload", "lang", "langen", "langru", "help", "gui", "admin"
     );
 
     private static Message msg(String miniMessage) {
@@ -55,8 +56,11 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
         addSubCommand(new InfoSubCommand());
         addSubCommand(new StatsSubCommand());
         addSubCommand(new GuiSubCommand());
+        addSubCommand(new AdminGuiSubCommand());
         addSubCommand(new ReloadSubCommand());
         addSubCommand(new LangSubCommand());
+        addSubCommand(new LangEnSubCommand());
+        addSubCommand(new LangRuSubCommand());
         addSubCommand(new HelpSubCommand());
     }
 
@@ -363,26 +367,44 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
         }
     }
 
-    // ── /quests lang <en|ru> ────────────────────────────────────
+    // ── /quests lang | /quests langen | /quests langru ──────────
 
     private class LangSubCommand extends AbstractAsyncCommand {
-        LangSubCommand() { super("lang", "Change language"); }
+        LangSubCommand() { super("lang", "Show language usage"); }
 
         @Override
         public CompletableFuture<Void> executeAsync(CommandContext context) {
             if (!context.isPlayer()) return done();
             CommandSender sender = context.sender();
+            context.sendMessage(msg(L(sender, "cmd.lang.usage")));
+            return done();
+        }
+    }
 
-            String langCode = parseTrailingArg(context);
-            LOGGER.info("[quests lang] input='{}' parsed_arg='{}'",
-                    context.getInputString(), langCode);
+    private class LangEnSubCommand extends AbstractAsyncCommand {
+        LangEnSubCommand() { super("langen", "Switch to English"); }
 
-            if (langCode == null || langCode.isEmpty()) {
-                context.sendMessage(msg(L(sender, "cmd.lang.usage")));
-                return done();
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            if (!context.isPlayer()) return done();
+            CommandSender sender = context.sender();
+            if (plugin.getLangManager().setPlayerLang(sender.getUuid(), "en")) {
+                context.sendMessage(msg(L(sender, "cmd.lang.changed")));
+            } else {
+                context.sendMessage(msg(L(sender, "cmd.lang.invalid")));
             }
+            return done();
+        }
+    }
 
-            if (plugin.getLangManager().setPlayerLang(sender.getUuid(), langCode.toLowerCase())) {
+    private class LangRuSubCommand extends AbstractAsyncCommand {
+        LangRuSubCommand() { super("langru", "Switch to Russian"); }
+
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            if (!context.isPlayer()) return done();
+            CommandSender sender = context.sender();
+            if (plugin.getLangManager().setPlayerLang(sender.getUuid(), "ru")) {
                 context.sendMessage(msg(L(sender, "cmd.lang.changed")));
             } else {
                 context.sendMessage(msg(L(sender, "cmd.lang.invalid")));
@@ -403,48 +425,71 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
             if (!checkPerm(sender, context, "ecotalequests.use")) return done();
 
             LOGGER.info("[quests gui] sender={}", sender.getDisplayName());
+            openGuiForSender(context, sender, false);
+            return done();
+        }
+    }
 
-            if (sender instanceof Player player) {
-                Ref<EntityStore> ref = player.getReference();
-                if (ref != null && ref.isValid()) {
-                    Store<EntityStore> store = ref.getStore();
-                    try {
-                        // Store.getComponent must run on WorldThread, not ForkJoinPool.
-                        // Use reflection for getExternalData().getWorld() to get the
-                        // World (Executor) since stub return types differ from real API.
-                        java.lang.reflect.Method getExt = store.getClass()
-                                .getMethod("getExternalData");
-                        Object extData = getExt.invoke(store);
-                        java.lang.reflect.Method getWorld = extData.getClass()
-                                .getMethod("getWorld");
-                        Object worldObj = getWorld.invoke(extData);
+    // ── /quests admin ───────────────────────────────────────────
 
-                        if (worldObj instanceof java.util.concurrent.Executor worldExec) {
-                            return CompletableFuture.runAsync(() -> {
-                                try {
-                                    java.lang.reflect.Method getComp = store.getClass()
-                                            .getMethod("getComponent", Ref.class, ComponentType.class);
-                                    Object result = getComp.invoke(store, ref,
-                                            PlayerRef.getComponentType());
-                                    if (result instanceof PlayerRef playerRef) {
-                                        QuestGui.open(plugin, playerRef, store, sender.getUuid());
+    private class AdminGuiSubCommand extends AbstractAsyncCommand {
+        AdminGuiSubCommand() { super("admin", "Open admin settings panel"); }
+
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            if (!context.isPlayer()) return done();
+            CommandSender sender = context.sender();
+            if (!checkPerm(sender, context, "ecotalequests.admin.settings")) return done();
+
+            LOGGER.info("[quests admin] sender={}", sender.getDisplayName());
+            openGuiForSender(context, sender, true);
+            return done();
+        }
+    }
+
+    /**
+     * Opens custom UI (quest panel or admin panel) for the given sender.
+     * Must resolve PlayerRef on the world thread via reflection.
+     */
+    private void openGuiForSender(CommandContext context, CommandSender sender, boolean admin) {
+        if (sender instanceof Player player) {
+            Ref<EntityStore> ref = player.getReference();
+            if (ref != null && ref.isValid()) {
+                Store<EntityStore> store = ref.getStore();
+                try {
+                    java.lang.reflect.Method getExt = store.getClass()
+                            .getMethod("getExternalData");
+                    Object extData = getExt.invoke(store);
+                    java.lang.reflect.Method getWorld = extData.getClass()
+                            .getMethod("getWorld");
+                    Object worldObj = getWorld.invoke(extData);
+
+                    if (worldObj instanceof java.util.concurrent.Executor worldExec) {
+                        CompletableFuture.runAsync(() -> {
+                            try {
+                                java.lang.reflect.Method getComp = store.getClass()
+                                        .getMethod("getComponent", Ref.class, ComponentType.class);
+                                Object result = getComp.invoke(store, ref,
+                                        PlayerRef.getComponentType());
+                                if (result instanceof PlayerRef playerRef) {
+                                    if (admin) {
+                                        AdminQuestsGui.open(plugin, playerRef, ref, store, sender.getUuid());
+                                    } else {
+                                        PlayerQuestsGui.open(plugin, playerRef, ref, store, sender.getUuid());
                                     }
-                                } catch (NoClassDefFoundError e) {
-                                    LOGGER.warn("HyUI not available: {}", e.getMessage());
-                                } catch (Exception e) {
-                                    LOGGER.error("[quests gui] failed on WorldThread", e);
                                 }
-                            }, worldExec);
-                        } else {
-                            LOGGER.warn("[quests gui] World is not an Executor");
-                        }
-                    } catch (ReflectiveOperationException e) {
-                        LOGGER.error("[quests gui] reflection failed", e);
-                        context.sendMessage(msg("<red>Failed to open GUI.</red>"));
+                            } catch (Exception e) {
+                                LOGGER.error("[quests {}] failed on WorldThread", admin ? "admin" : "gui", e);
+                            }
+                        }, worldExec);
+                    } else {
+                        LOGGER.warn("[quests {}] World is not an Executor", admin ? "admin" : "gui");
                     }
+                } catch (ReflectiveOperationException e) {
+                    LOGGER.error("[quests {}] reflection failed", admin ? "admin" : "gui", e);
+                    context.sendMessage(msg("<red>Failed to open GUI.</red>"));
                 }
             }
-            return done();
         }
     }
 
@@ -465,7 +510,8 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
             context.sendMessage(msg(L(sender, "cmd.help.abandon")));
             context.sendMessage(msg(L(sender, "cmd.help.info")));
             context.sendMessage(msg(L(sender, "cmd.help.stats")));
-            context.sendMessage(msg("<gray>/quests gui</gray> <dark_gray>— Open quest panel (requires HyUI)</dark_gray>"));
+            context.sendMessage(msg(L(sender, "cmd.help.gui")));
+            context.sendMessage(msg(L(sender, "cmd.help.admin_gui")));
             context.sendMessage(msg(L(sender, "cmd.help.reload")));
             context.sendMessage(msg(L(sender, "cmd.help.lang")));
             context.sendMessage(msg(L(sender, "cmd.help.help")));

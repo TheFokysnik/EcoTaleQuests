@@ -43,8 +43,11 @@ public class QuestsConfig {
         public void setLanguage(String l) { this.Language = l; }
         public String getMessagePrefix() { return MessagePrefix; }
         public boolean isNotifyOnProgress() { return NotifyOnProgress; }
+        public void setNotifyOnProgress(boolean v) { this.NotifyOnProgress = v; }
         public boolean isNotifyOnComplete() { return NotifyOnComplete; }
+        public void setNotifyOnComplete(boolean v) { this.NotifyOnComplete = v; }
         public int getAutoSaveIntervalMinutes() { return AutoSaveIntervalMinutes; }
+        public void setAutoSaveIntervalMinutes(int v) { this.AutoSaveIntervalMinutes = v; }
     }
 
     /** Лимиты квестов. */
@@ -58,10 +61,15 @@ public class QuestsConfig {
         private String WeeklyResetDay = "MONDAY";
 
         public int getMaxDailyActive() { return MaxDailyActive; }
+        public void setMaxDailyActive(int v) { this.MaxDailyActive = v; }
         public int getMaxWeeklyActive() { return MaxWeeklyActive; }
+        public void setMaxWeeklyActive(int v) { this.MaxWeeklyActive = v; }
         public int getDailyPoolSize() { return DailyPoolSize; }
+        public void setDailyPoolSize(int v) { this.DailyPoolSize = v; }
         public int getWeeklyPoolSize() { return WeeklyPoolSize; }
+        public void setWeeklyPoolSize(int v) { this.WeeklyPoolSize = v; }
         public int getMaxAbandonPerDay() { return MaxAbandonPerDay; }
+        public void setMaxAbandonPerDay(int v) { this.MaxAbandonPerDay = v; }
         public String getDailyResetTime() { return DailyResetTime; }
         public String getWeeklyResetDay() { return WeeklyResetDay; }
     }
@@ -183,9 +191,11 @@ public class QuestsConfig {
         private List<String> AllowedWorlds = List.of();
 
         public boolean isRequireOnline() { return RequireOnline; }
+        public void setRequireOnline(boolean v) { this.RequireOnline = v; }
         public int getMinPlaytimeMinutes() { return MinPlaytimeMinutes; }
         public long getQuestAcceptCooldownMs() { return QuestAcceptCooldownMs; }
         public boolean isPreventDuplicateTypes() { return PreventDuplicateTypes; }
+        public void setPreventDuplicateTypes(boolean v) { this.PreventDuplicateTypes = v; }
         public List<String> getAllowedWorlds() { return AllowedWorlds; }
     }
 }
