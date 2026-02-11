@@ -5,7 +5,7 @@
 Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **native GUI panel**, an **admin settings panel**, fully localized quest names, and real-time chat progress notifications.
 
 ![Hytale Server Mod](https://img.shields.io/badge/Hytale-Server%20Mod-0ea5e9?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.2.0-10b981?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.2.1-10b981?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17+-f97316?style=for-the-badge&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-a855f7?style=for-the-badge)
 ![Ecotale](https://img.shields.io/badge/Ecotale-1.0.7-6366f1?style=for-the-badge)
@@ -52,7 +52,7 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 
 ```bash
 # 1. Copy JAR files to the server's mods/ folder
-cp EcoTaleQuests-1.2.0.jar /server/mods/
+cp EcoTaleQuests-1.2.1.jar /server/mods/
 
 # 2. Make sure Ecotale-1.0.7.jar is also in mods/
 # 3. Start the server — config & lang files are created automatically
@@ -422,11 +422,18 @@ Built-in support for Russian and English. Language files are auto-generated on f
 
 ## 📝 Changelog
 
+### v1.2.1
+- **Fix:** `earn_coins` and `gain_xp` quests gave disproportionately high rewards (up to 50× base) due to raw amount used in difficulty formula without normalization
+- **Fix:** `DifficultyMultipliers` from config were loaded but never applied to reward calculation
+- **New:** Amount normalization by quest type — `earn_coins` (÷10) and `gain_xp` (÷100) now produce balanced rewards comparable to other quest types
+
 ### v1.2.0
 - **New:** Native GUI — full migration from HyUI to `InteractiveCustomUIPage` API
 - **New:** Admin settings panel (`/quests admin`) — toggle modules, reload, refresh, save
 - **New:** Language subcommands — `/quests langen`, `/quests langru`
 - **New:** Separate duplicate type checking — daily and weekly quests validated independently
+- **Fix:** `Could not find document` crash — added `IncludesAssetPack` to manifest
+- **Fix:** Truncated GUI buttons (widened to 180px)
 - **Removed:** HyUI dependency
 
 ### v1.1.0
@@ -460,7 +467,7 @@ cd EcoTaleQuests
 # Build
 ./gradlew clean jar
 
-# Output: build/libs/EcoTaleQuests-1.2.0.jar
+# Output: build/libs/EcoTaleQuests-1.2.1.jar
 ```
 
 ## 📄 License

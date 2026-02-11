@@ -182,8 +182,21 @@ public class QuestGenerator {
         double baseCoins = period == QuestPeriod.WEEKLY ? rewards.getBaseWeeklyCoins() : rewards.getBaseDailyCoins();
         int baseXp = period == QuestPeriod.WEEKLY ? rewards.getBaseWeeklyXP() : rewards.getBaseDailyXP();
 
-        // Множитель сложности от количества
-        double diffMult = 1.0 + (amount / 100.0) * 0.5;
+        // Нормализуем amount к единой шкале по типу квеста,
+        // чтобы "gain_xp: 10000" не давало diffMult=51, а считалось
+        // эквивалентно "kill_mob: 20".
+        double normalizedAmount = normalizeAmount(candidate.type, amount);
+
+        // Множитель сложности от нормализованного количества (диапазон ~1.0–2.5)
+        double diffMult = 1.0 + (normalizedAmount / 100.0) * 0.5;
+
+        // Применяем DifficultyMultiplier по типу квеста из конфига
+        String typeKey = candidate.type.name().toLowerCase();
+        Map<String, Double> diffMultipliers = rewards.getDifficultyMultipliers();
+        if (diffMultipliers != null && diffMultipliers.containsKey(typeKey)) {
+            diffMult *= diffMultipliers.get(typeKey);
+        }
+
         baseCoins *= diffMult;
         baseXp = (int) (baseXp * diffMult);
 
@@ -256,6 +269,31 @@ public class QuestGenerator {
     // ═════════════════════════════════════════════════════════════
     //  UTIL
     // ═════════════════════════════════════════════════════════════
+
+    /**
+     * Normalizes quest amount to a unified scale (~10–100) regardless of quest type.
+     * Without this, "gain_xp: 10000" would produce diffMult=51 while "kill_mob: 20"
+     * gives diffMult=1.1 — a 46× difference in reward for comparable difficulty.
+     *
+     * Each type has a divisor representing what "1 unit of normalized difficulty" means.
+     * kill_mob: 1 kill ≈ 1 unit    →  20 kills → normalized 20
+     * mine_ore: 1 ore ≈ 1 unit     →  50 ores  → normalized 50
+     * chop_wood: 1 log ≈ 1 unit    →  60 logs  → normalized 60
+     * harvest_crop: 1 crop ≈ 1     →  40 crops → normalized 40
+     * earn_coins: ~10 coins ≈ 1    → 500 coins → normalized 50
+     * gain_xp: ~100 XP ≈ 1        → 5000 XP   → normalized 50
+     */
+    private static double normalizeAmount(QuestType type, int amount) {
+        double divisor = switch (type) {
+            case KILL_MOB -> 1.0;
+            case MINE_ORE -> 1.0;
+            case CHOP_WOOD -> 1.0;
+            case HARVEST_CROP -> 1.0;
+            case EARN_COINS -> 10.0;
+            case GAIN_XP -> 100.0;
+        };
+        return amount / divisor;
+    }
 
     private static int randomRange(int min, int max) {
         if (min >= max) return min;
