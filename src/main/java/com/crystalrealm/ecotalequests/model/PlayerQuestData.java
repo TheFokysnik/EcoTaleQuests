@@ -96,11 +96,21 @@ public class PlayerQuestData {
     }
 
     /**
-     * Помечает квест как просроченный.
+     * Помечает квест как просроченный (пул daily/weekly истёк).
      */
     public void expire() {
         if (this.status == QuestStatus.ACTIVE) {
             this.status = QuestStatus.EXPIRED;
+        }
+    }
+
+    /**
+     * Помечает квест как проваленный (таймер выполнения истёк).
+     */
+    public void fail() {
+        if (this.status == QuestStatus.ACTIVE) {
+            this.status = QuestStatus.FAILED;
+            this.completedAt = System.currentTimeMillis();
         }
     }
 

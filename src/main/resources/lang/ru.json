@@ -85,6 +85,8 @@
   "cmd.accept.duplicate": "<red>У вас уже есть квест такого же типа.",
   "cmd.accept.already_active": "<red>Вы уже выполняете этот квест.",
   "cmd.accept.cooldown": "<red>Подождите немного перед принятием следующего квеста.",
+  "cmd.accept.rank_low": "<red>Ваш ранг слишком низкий для этого квеста.",
+  "cmd.accept.slots_full": "<red>Все слоты для этого квеста заняты.",
 
   "cmd.abandon.usage": "<yellow>Использование: <white>/quests abandon <id>",
   "cmd.abandon.success": "<yellow>Квест отменён.",
@@ -113,9 +115,9 @@
   "cmd.reload.success": "<green>[+] Конфигурация перезагружена.",
   "cmd.reload.fail": "<red>[!] Ошибка перезагрузки конфигурации.",
 
-  "cmd.lang.usage": "<yellow>Используйте: <white>/quests langen <gray>или <white>/quests langru",
+  "cmd.lang.usage": "<yellow>Используйте: <white>/quests lang<код> <gray>где код = en, ru, pt_br, fr, de, es",
   "cmd.lang.changed": "<green>[+] Язык изменён.",
-  "cmd.lang.invalid": "<red>Неверный язык. Доступные: <yellow>en<red>, <yellow>ru",
+  "cmd.lang.invalid": "<red>Неверный язык. Доступные: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Помощь <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Активные квесты",
@@ -127,7 +129,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Панель квестов",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Настройки <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Перезагрузить конфиг <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests langen|langru <gray>-- Сменить язык",
+  "cmd.help.lang": "<yellow>/quests lang<код> <gray>-- Сменить язык (en/ru/pt_br/fr/de/es)",
   "cmd.help.help": "<yellow>/quests help <gray>-- Эта справка",
   "cmd.help.footer": "<gold>================================",
 
@@ -154,6 +156,12 @@
   "gui.admin.max_abandon": "Макс. отмен/день",
   "gui.admin.require_online": "Требовать онлайн",
   "gui.admin.prevent_duplicates": "Без дубликатов типов",
+  "gui.admin.sec_boards": "Доски квестов",
+  "gui.admin.access_mode": "Режим доступа",
+  "gui.admin.mode_both": "Всё",
+  "gui.admin.mode_board": "Только доска",
+  "gui.admin.mode_gui": "Только GUI",
+  "gui.admin.boards_enabled": "Доски включены",
   "gui.admin.toggle": "Переключить",
   "gui.admin.btn_reload": "Перезагрузка",
   "gui.admin.btn_refresh": "Обновить",
@@ -164,5 +172,36 @@
   "gui.admin.data_save_fail": "Ошибка сохранения данных.",
   "gui.admin.stat_daily_pool": "Ежедн. пул",
   "gui.admin.stat_weekly_pool": "Недел. пул",
-  "gui.admin.stat_version": "Версия"
+  "gui.admin.stat_version": "Версия",
+
+  "cmd.rank.header": "<gold>======= <yellow>[Q] Ранг авантюриста <gold>=======",
+  "cmd.rank.current": "<gray>Ранг: <{color}>{rank}",
+  "cmd.rank.points": "<gray>Очки ранга: <white>{points}",
+  "cmd.rank.next": "<gray>Следующий: <yellow>{rank} <gray>(нужно ещё <white>{needed}<gray>, <green>{percent}%<gray>)",
+  "cmd.rank.max": "<gold>★ Вы достигли максимального ранга!",
+  "cmd.rank.stats": "<gray>Выполнено: <green>{completed} <gray>| Провалено: <red>{failed}",
+  "cmd.rank.footer": "<gold>================================",
+
+  "rank.up": "<green>[↑] <gold>Ранг повышен: <{color}>{rank}<gold>! Поздравляем!",
+  "rank.down": "<red>[↓] Ранг понижен: <{color}>{rank}<red>.",
+  "rank.name.E": "E — Новичок",
+  "rank.name.D": "D — Ученик",
+  "rank.name.C": "C — Воин",
+  "rank.name.B": "B — Ветеран",
+  "rank.name.A": "A — Элита",
+  "rank.name.S": "S — Легенда",
+
+  "quest.failed_timer": "<red>[✕] Квест <gold>{name}</gold> <red>провален — время истекло!",
+  "quest.timer_warning": "<yellow>[⏰] Квест <gold>{name}</gold><yellow>: осталось <white>{minutes} мин.",
+
+  "cmd.help.rank": "<yellow>/quests rank <gray>-- Ваш ранг авантюриста",
+
+  "gui.rank_display": "Ранг: {rank} ({points} оч.)",
+  "gui.btn.locked": "РАНГ {rank}+",
+  "gui.btn.occupied": "Занято {current}/{max}",
+  "gui.timer_suffix": " [{time}мин]",
+  "gui.access.global": "(!) Глобальный",
+  "gui.access.limited": "({current}/{max}) слотов",
+
+  "cmd.gui.board_only": "<red>Квесты доступны только через доски квестов. Подойдите к доске и нажмите [F]."
 }

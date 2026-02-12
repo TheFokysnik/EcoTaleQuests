@@ -1,7 +1,7 @@
 {
     "Group": "com.crystalrealm",
     "Name": "EcoTaleQuests",
-    "Version": "1.2.1",
+    "Version": "1.3.1",
     "Description": "Daily and weekly quest system with native GUI panel, admin settings, localization, and Ecotale economy rewards.",
     "Main": "com.crystalrealm.ecotalequests.EcoTaleQuestsPlugin",
     "IncludesAssetPack": true,

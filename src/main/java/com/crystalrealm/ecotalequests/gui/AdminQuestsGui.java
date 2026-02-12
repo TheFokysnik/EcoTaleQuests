@@ -29,7 +29,7 @@ import java.util.UUID;
  * <p>Settings (S1–S12):</p>
  * <ul>
  *   <li>S1: Debug Mode (toggle)</li>
- *   <li>S2: Language (toggle en/ru)</li>
+ *   <li>S2: Language (cycle through supported languages)</li>
  *   <li>S3: Notify on Progress (toggle)</li>
  *   <li>S4: Notify on Complete (toggle)</li>
  *   <li>S5: Auto-Save Interval (increment)</li>
@@ -112,13 +112,14 @@ public final class AdminQuestsGui extends InteractiveCustomUIPage<AdminQuestsGui
         cmd.set("#SecGeneral.Text", L(lang, "gui.admin.sec_general"));
         cmd.set("#SecLimits.Text", L(lang, "gui.admin.sec_limits"));
         cmd.set("#SecProtection.Text", L(lang, "gui.admin.sec_protection"));
+        cmd.set("#SecBoards.Text", L(lang, "gui.admin.sec_boards"));
         cmd.set("#SecActions.Text", L(lang, "gui.admin.sec_actions"));
         cmd.set("#SecStats.Text", L(lang, "gui.admin.sec_stats"));
 
         // ── Bind events ─────────────────────────────────────
 
-        // Toggle buttons (S1–S4, S11, S12)
-        for (int s : new int[]{1, 2, 3, 4, 11, 12}) {
+        // Toggle buttons (S1–S4, S11, S12, S13, S14)
+        for (int s : new int[]{1, 2, 3, 4, 11, 12, 13, 14}) {
             events.addEventBinding(CustomUIEventBindingType.Activating, "#S" + s + "Toggle",
                     new EventData().append(KEY_ACTION, "toggle").append(KEY_SLOT, String.valueOf(s)));
         }
@@ -227,14 +228,30 @@ public final class AdminQuestsGui extends InteractiveCustomUIPage<AdminQuestsGui
     private void handleToggle(int slot, QuestsConfig config, LangManager lang) {
         QuestsConfig.GeneralSection gen = config.getGeneral();
         QuestsConfig.ProtectionSection prot = config.getProtection();
+        QuestsConfig.BoardsSection boards = config.getBoards();
 
         switch (slot) {
             case 1  -> gen.setDebugMode(!gen.isDebugMode());
-            case 2  -> gen.setLanguage("en".equalsIgnoreCase(gen.getLanguage()) ? "ru" : "en");
+            case 2  -> {
+                java.util.List<String> langs = LangManager.SUPPORTED_LANGS;
+                int idx = langs.indexOf(gen.getLanguage().toLowerCase());
+                gen.setLanguage(langs.get((idx + 1) % langs.size()));
+            }
             case 3  -> gen.setNotifyOnProgress(!gen.isNotifyOnProgress());
             case 4  -> gen.setNotifyOnComplete(!gen.isNotifyOnComplete());
             case 11 -> prot.setRequireOnline(!prot.isRequireOnline());
             case 12 -> prot.setPreventDuplicateTypes(!prot.isPreventDuplicateTypes());
+            case 13 -> {
+                // Cycle: both → board_only → gui_only → both
+                String current = boards.getQuestAccessMode();
+                String next = switch (current.toLowerCase()) {
+                    case "both"       -> "board_only";
+                    case "board_only" -> "gui_only";
+                    default           -> "both";
+                };
+                boards.setQuestAccessMode(next);
+            }
+            case 14 -> boards.setEnabled(!boards.isEnabled());
         }
     }
 
@@ -289,6 +306,7 @@ public final class AdminQuestsGui extends InteractiveCustomUIPage<AdminQuestsGui
         QuestsConfig.GeneralSection gen = config.getGeneral();
         QuestsConfig.QuestLimitsSection limits = config.getQuestLimits();
         QuestsConfig.ProtectionSection prot = config.getProtection();
+        QuestsConfig.BoardsSection boards = config.getBoards();
 
         String toggleText = L(lang, "gui.admin.toggle");
 
@@ -345,6 +363,24 @@ public final class AdminQuestsGui extends InteractiveCustomUIPage<AdminQuestsGui
         cmd.set("#S12Label.Text", L(lang, "gui.admin.prevent_duplicates"));
         cmd.set("#S12Value.Text", boolText(prot.isPreventDuplicateTypes()));
         cmd.set("#S12Toggle.Text", toggleText);
+
+        // ── Boards section ──────────────────────────────────
+        cmd.set("#SecBoards.Text", L(lang, "gui.admin.sec_boards"));
+
+        // S13: Quest Access Mode
+        cmd.set("#S13Label.Text", L(lang, "gui.admin.access_mode"));
+        String modeDisplay = switch (boards.getQuestAccessMode().toLowerCase()) {
+            case "board_only" -> L(lang, "gui.admin.mode_board");
+            case "gui_only"   -> L(lang, "gui.admin.mode_gui");
+            default           -> L(lang, "gui.admin.mode_both");
+        };
+        cmd.set("#S13Value.Text", modeDisplay);
+        cmd.set("#S13Toggle.Text", toggleText);
+
+        // S14: Boards Enabled
+        cmd.set("#S14Label.Text", L(lang, "gui.admin.boards_enabled"));
+        cmd.set("#S14Value.Text", boolText(boards.isEnabled()));
+        cmd.set("#S14Toggle.Text", toggleText);
 
         // Action button labels
         cmd.set("#AB1.Text", L(lang, "gui.admin.btn_reload"));

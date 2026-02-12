@@ -4,6 +4,9 @@ import com.crystalrealm.ecotalequests.config.QuestsConfig;
 import com.crystalrealm.ecotalequests.generator.QuestGenerator;
 import com.crystalrealm.ecotalequests.model.*;
 import com.crystalrealm.ecotalequests.reward.QuestRewardCalculator;
+import com.crystalrealm.ecotalequests.service.QuestAvailabilityManager;
+import com.crystalrealm.ecotalequests.service.QuestRankService;
+import com.crystalrealm.ecotalequests.service.TimerService;
 import com.crystalrealm.ecotalequests.storage.QuestStorage;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
@@ -31,6 +34,9 @@ public class QuestTracker {
     private final QuestGenerator generator;
     private final QuestRewardCalculator rewardCalculator;
     private final LangManager langManager;
+    private final QuestRankService rankService;
+    private final QuestAvailabilityManager availabilityManager;
+    private final TimerService timerService;
 
     /** Кеш активных квестов игрока: playerUuid → list of active PlayerQuestData */
     private final Map<UUID, List<PlayerQuestData>> activeQuestCache = new ConcurrentHashMap<>();
@@ -39,12 +45,21 @@ public class QuestTracker {
                         @Nonnull QuestStorage storage,
                         @Nonnull QuestGenerator generator,
                         @Nonnull QuestRewardCalculator rewardCalculator,
-                        @Nonnull LangManager langManager) {
+                        @Nonnull LangManager langManager,
+                        @Nonnull QuestRankService rankService,
+                        @Nonnull QuestAvailabilityManager availabilityManager,
+                        @Nonnull TimerService timerService) {
         this.config = config;
         this.storage = storage;
         this.generator = generator;
         this.rewardCalculator = rewardCalculator;
         this.langManager = langManager;
+        this.rankService = rankService;
+        this.availabilityManager = availabilityManager;
+        this.timerService = timerService;
+
+        // Настраиваем callback для таймера
+        this.timerService.setOnTimerExpired(this::onQuestTimerExpired);
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -113,6 +128,16 @@ public class QuestTracker {
         if (quest == null) return AcceptResult.QUEST_NOT_FOUND;
         if (quest.isExpired()) return AcceptResult.QUEST_EXPIRED;
 
+        // Проверяем ранг
+        if (config.getRanks().isEnabled() && !rankService.canAcceptByRank(playerUuid, quest)) {
+            return AcceptResult.RANK_TOO_LOW;
+        }
+
+        // Проверяем доступность (GLOBAL_UNIQUE / LIMITED_SLOTS)
+        if (!availabilityManager.isAvailable(quest, playerUuid)) {
+            return AcceptResult.SLOTS_FULL;
+        }
+
         // Проверяем лимиты
         List<PlayerQuestData> active = getActiveQuests(playerUuid);
         long activeCount = active.stream()
@@ -145,12 +170,24 @@ public class QuestTracker {
             return AcceptResult.ALREADY_ACTIVE;
         }
 
+        // Пытаемся занять слот (для shared квестов)
+        QuestAssignment assignment = availabilityManager.tryAssign(quest, playerUuid);
+        if (assignment == null) {
+            return AcceptResult.SLOTS_FULL;
+        }
+
         // Принимаем
         PlayerQuestData data = PlayerQuestData.create(playerUuid, questId);
         storage.savePlayerQuest(data);
         invalidateCache(playerUuid);
 
-        LOGGER.info("Player {} accepted quest {} ({})", playerUuid, quest.getShortId(), quest.getName());
+        // Регистрируем таймер (если есть)
+        if (quest.hasTimer()) {
+            timerService.registerTimer(assignment);
+        }
+
+        LOGGER.info("Player {} accepted quest {} ({}) [{}]",
+                playerUuid, quest.getShortId(), quest.getName(), quest.getAccessType());
         return AcceptResult.SUCCESS;
     }
 
@@ -172,6 +209,11 @@ public class QuestTracker {
         data.abandon();
         storage.savePlayerQuest(data);
         storage.recordAbandon(playerUuid);
+
+        // Освобождаем слот (для shared квестов)
+        availabilityManager.releaseAssignment(questId, playerUuid);
+        timerService.removeTimer(questId, playerUuid);
+
         invalidateCache(playerUuid);
 
         LOGGER.info("Player {} abandoned quest {}", playerUuid, questId);
@@ -242,6 +284,15 @@ public class QuestTracker {
     private void onQuestCompleted(UUID playerUuid, Quest quest, int playerLevel) {
         LOGGER.info("Player {} completed quest {} ({})",
                 playerUuid, quest.getShortId(), quest.getName());
+
+        // Освобождаем слот (для shared квестов)
+        availabilityManager.releaseAssignment(quest.getQuestId(), playerUuid);
+        timerService.removeTimer(quest.getQuestId(), playerUuid);
+
+        // Начисляем очки ранга
+        if (config.getRanks().isEnabled()) {
+            rankService.awardRankPoints(playerUuid, quest);
+        }
 
         // Resolve VIP multiplier from permissions
         QuestRewardCalculator.VipResult vip = rewardCalculator.resolveVipMultiplier(playerUuid);
@@ -363,10 +414,43 @@ public class QuestTracker {
                 if (quest != null && quest.isExpired()) {
                     pqd.expire();
                     storage.savePlayerQuest(pqd);
+                    // Освобождаем слот
+                    availabilityManager.releaseAssignment(pqd.getQuestId(), entry.getKey());
+                    timerService.removeTimer(pqd.getQuestId(), entry.getKey());
                     LOGGER.debug("Quest {} expired for player {}", pqd.getQuestId(), entry.getKey());
                 }
             }
         }
+    }
+
+    /**
+     * Callback при истечении таймера квеста.
+     */
+    private void onQuestTimerExpired(@Nonnull UUID questId, @Nonnull UUID playerUuid) {
+        PlayerQuestData data = storage.loadPlayerQuest(playerUuid, questId);
+        if (data == null || data.getStatus() != QuestStatus.ACTIVE) return;
+
+        Quest quest = storage.getQuest(questId);
+        data.fail();
+        storage.savePlayerQuest(data);
+
+        // Освобождаем слот
+        availabilityManager.releaseAssignment(questId, playerUuid);
+
+        // Штраф за провал
+        if (config.getRanks().isEnabled() && config.getRanks().isPenalizeOnFail()) {
+            rankService.penalizeRankPoints(playerUuid, config.getRanks().getDefaultFailPenalty());
+        }
+
+        invalidateCache(playerUuid);
+
+        // Уведомляем игрока
+        String questName = quest != null ? quest.getName() : questId.toString().substring(0, 8);
+        String msg = langManager.getForPlayer(playerUuid, "quest.failed_timer",
+                "name", questName);
+        MessageUtil.sendMessage(playerUuid, msg);
+
+        LOGGER.info("Quest {} FAILED (timer expired) for player {}", questId, playerUuid);
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -399,13 +483,17 @@ public class QuestTracker {
         activeQuestCache.remove(playerUuid);
     }
 
+    @Nonnull public QuestRankService getRankService() { return rankService; }
+    @Nonnull public QuestAvailabilityManager getAvailabilityManager() { return availabilityManager; }
+    @Nonnull public TimerService getTimerService() { return timerService; }
+
     // ═════════════════════════════════════════════════════════════
     //  ENUMS
     // ═════════════════════════════════════════════════════════════
 
     public enum AcceptResult {
         SUCCESS, QUEST_NOT_FOUND, QUEST_EXPIRED, LIMIT_REACHED,
-        DUPLICATE_TYPE, ALREADY_ACTIVE
+        DUPLICATE_TYPE, ALREADY_ACTIVE, RANK_TOO_LOW, SLOTS_FULL
     }
 
     public enum AbandonResult {

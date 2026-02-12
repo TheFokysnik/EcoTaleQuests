@@ -1,7 +1,10 @@
 package com.crystalrealm.ecotalequests.storage;
 
 import com.crystalrealm.ecotalequests.model.PlayerQuestData;
+import com.crystalrealm.ecotalequests.model.PlayerRankData;
 import com.crystalrealm.ecotalequests.model.Quest;
+import com.crystalrealm.ecotalequests.model.QuestAssignment;
+import com.crystalrealm.ecotalequests.model.QuestBoardLocation;
 import com.crystalrealm.ecotalequests.model.QuestPeriod;
 
 import javax.annotation.Nonnull;
@@ -59,4 +62,33 @@ public interface QuestStorage {
 
     /** Записывает отмену квеста. */
     void recordAbandon(@Nonnull UUID playerUuid);
+
+    // ── Rank Data ───────────────────────────────────────────────
+
+    /** Загружает ранговые данные игрока. */
+    PlayerRankData loadRankData(@Nonnull UUID playerUuid);
+
+    /** Сохраняет ранговые данные игрока. */
+    void saveRankData(@Nonnull PlayerRankData data);
+
+    // ── Board Locations ─────────────────────────────────────────
+
+    /** Загружает все доски квестов. */
+    @Nonnull
+    List<QuestBoardLocation> loadBoardLocations();
+
+    /** Сохраняет доску квестов. */
+    void saveBoardLocation(@Nonnull QuestBoardLocation board);
+
+    /** Удаляет доску квестов. */
+    void removeBoardLocation(@Nonnull UUID boardId);
+
+    // ── Quest Assignments ───────────────────────────────────────
+
+    /** Загружает активные назначения (не released, не expired). */
+    @Nonnull
+    List<QuestAssignment> loadActiveAssignments();
+
+    /** Сохраняет назначение. */
+    void saveAssignment(@Nonnull QuestAssignment assignment);
 }

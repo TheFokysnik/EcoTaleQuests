@@ -85,6 +85,8 @@
   "cmd.accept.duplicate": "<red>You already have a quest of the same type.",
   "cmd.accept.already_active": "<red>You're already doing this quest.",
   "cmd.accept.cooldown": "<red>Please wait before accepting another quest.",
+  "cmd.accept.rank_low": "<red>Your rank is too low for this quest.",
+  "cmd.accept.slots_full": "<red>All slots for this quest are taken.",
 
   "cmd.abandon.usage": "<yellow>Usage: <white>/quests abandon <id>",
   "cmd.abandon.success": "<yellow>Quest abandoned.",
@@ -113,9 +115,9 @@
   "cmd.reload.success": "<green>[+] Configuration reloaded.",
   "cmd.reload.fail": "<red>[!] Failed to reload configuration.",
 
-  "cmd.lang.usage": "<yellow>Usage: <white>/quests langen <gray>or <white>/quests langru",
+  "cmd.lang.usage": "<yellow>Usage: <white>/quests lang<code> <gray>where code = en, ru, pt_br, fr, de, es",
   "cmd.lang.changed": "<green>[+] Language changed.",
-  "cmd.lang.invalid": "<red>Invalid language. Available: <yellow>en<red>, <yellow>ru",
+  "cmd.lang.invalid": "<red>Invalid language. Available: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Help <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Active quests",
@@ -127,7 +129,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Open quest panel",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Admin settings <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Reload config <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests langen|langru <gray>-- Change language",
+  "cmd.help.lang": "<yellow>/quests lang<code> <gray>-- Change language (en/ru/pt_br/fr/de/es)",
   "cmd.help.help": "<yellow>/quests help <gray>-- This help",
   "cmd.help.footer": "<gold>================================",
 
@@ -154,6 +156,12 @@
   "gui.admin.max_abandon": "Max Abandons/Day",
   "gui.admin.require_online": "Require Online",
   "gui.admin.prevent_duplicates": "No Duplicate Types",
+  "gui.admin.sec_boards": "Quest Boards",
+  "gui.admin.access_mode": "Access Mode",
+  "gui.admin.mode_both": "Both",
+  "gui.admin.mode_board": "Board Only",
+  "gui.admin.mode_gui": "GUI Only",
+  "gui.admin.boards_enabled": "Boards Enabled",
   "gui.admin.toggle": "Toggle",
   "gui.admin.btn_reload": "Reload Config",
   "gui.admin.btn_refresh": "Refresh Pools",
@@ -164,5 +172,36 @@
   "gui.admin.data_save_fail": "Failed to save data.",
   "gui.admin.stat_daily_pool": "Daily Pool",
   "gui.admin.stat_weekly_pool": "Weekly Pool",
-  "gui.admin.stat_version": "Version"
+  "gui.admin.stat_version": "Version",
+
+  "cmd.rank.header": "<gold>======= <yellow>[Q] Adventurer Rank <gold>=======",
+  "cmd.rank.current": "<gray>Rank: <{color}>{rank}",
+  "cmd.rank.points": "<gray>Rank points: <white>{points}",
+  "cmd.rank.next": "<gray>Next: <yellow>{rank} <gray>(need <white>{needed}<gray> more, <green>{percent}%<gray>)",
+  "cmd.rank.max": "<gold>★ You've reached the maximum rank!",
+  "cmd.rank.stats": "<gray>Completed: <green>{completed} <gray>| Failed: <red>{failed}",
+  "cmd.rank.footer": "<gold>================================",
+
+  "rank.up": "<green>[↑] <gold>Rank up: <{color}>{rank}<gold>! Congratulations!",
+  "rank.down": "<red>[↓] Rank down: <{color}>{rank}<red>.",
+  "rank.name.E": "E — Novice",
+  "rank.name.D": "D — Apprentice",
+  "rank.name.C": "C — Warrior",
+  "rank.name.B": "B — Veteran",
+  "rank.name.A": "A — Elite",
+  "rank.name.S": "S — Legend",
+
+  "quest.failed_timer": "<red>[✕] Quest <gold>{name}</gold> <red>failed — time's up!",
+  "quest.timer_warning": "<yellow>[⏰] Quest <gold>{name}</gold><yellow>: <white>{minutes} min remaining.",
+
+  "cmd.help.rank": "<yellow>/quests rank <gray>-- Your adventurer rank",
+
+  "gui.rank_display": "Rank: {rank} ({points} pts)",
+  "gui.btn.locked": "RANK {rank}+",
+  "gui.btn.occupied": "Taken {current}/{max}",
+  "gui.timer_suffix": " [{time}min]",
+  "gui.access.global": "(!) Global",
+  "gui.access.limited": "({current}/{max}) slots",
+
+  "cmd.gui.board_only": "<red>Quests are only accessible via quest boards. Walk to a board and press [F]."
 }

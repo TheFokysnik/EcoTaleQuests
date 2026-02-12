@@ -218,21 +218,28 @@ public class MobDeathQuestSystem extends DeathSystems.OnDeathSystem {
             }
         }
 
-        // Strategy 2: NPCEntity damage data
+        // Strategy 2: NPCEntity damage data (via reflection — method may not exist in all API versions)
         try {
-            var damageData = npc.getDamageData();
+            java.lang.reflect.Method getDmg = npc.getClass().getMethod("getDamageData");
+            Object damageData = getDmg.invoke(npc);
             if (damageData != null) {
-                Ref<EntityStore> ref = damageData.getMostDamagingAttacker();
+                java.lang.reflect.Method getMost = damageData.getClass().getMethod("getMostDamagingAttacker");
+                @SuppressWarnings("unchecked")
+                Ref<EntityStore> ref = (Ref<EntityStore>) getMost.invoke(damageData);
                 if (ref != null && ref.isValid()) {
                     LOGGER.info("Attacker resolved from damage data (most damaging)");
                     return ref;
                 }
-                Ref<EntityStore> any = damageData.getAnyAttacker();
+                java.lang.reflect.Method getAny = damageData.getClass().getMethod("getAnyAttacker");
+                @SuppressWarnings("unchecked")
+                Ref<EntityStore> any = (Ref<EntityStore>) getAny.invoke(damageData);
                 if (any != null && any.isValid()) {
                     LOGGER.info("Attacker resolved from damage data (any)");
                     return any;
                 }
             }
+        } catch (NoSuchMethodException ignored) {
+            // getDamageData() not available in this Hytale version — skip silently
         } catch (Exception e) {
             LOGGER.info("DamageData resolution failed: {}", e.getMessage());
         }

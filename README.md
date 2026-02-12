@@ -2,10 +2,10 @@
 
 **Daily & Weekly quest system for Hytale servers**
 
-Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **native GUI panel**, an **admin settings panel**, fully localized quest names, and real-time chat progress notifications.
+Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **native GUI panel**, an **admin settings panel**, **adventurer rank system**, **quest timers**, **physical quest boards**, fully localized quest names (6 languages), and real-time chat progress notifications.
 
 ![Hytale Server Mod](https://img.shields.io/badge/Hytale-Server%20Mod-0ea5e9?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.2.1-10b981?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.3.1-10b981?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17+-f97316?style=for-the-badge&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-a855f7?style=for-the-badge)
 ![Ecotale](https://img.shields.io/badge/Ecotale-1.0.7-6366f1?style=for-the-badge)
@@ -35,8 +35,11 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 | 🏅 **Milestone Alerts** | Additional notifications at 25%, 50%, 75% progress |
 | 🛡️ **Abuse Protection** | Accept cooldowns, world filtering, duplicate prevention, expiry enforcement |
 | 💾 **JSON Storage** | Per-player quest data saved as JSON files |
-| 🌍 **Localization** | RU / EN — all quest names, targets, and UI elements fully translated |
+| 🌍 **Localization** | RU / EN / PT-BR / FR / DE / ES — all quest names, targets, and UI elements fully translated |
 | 🔧 **Hot Reload** | `/quests reload` — no restart needed |
+| 🏅 **Adventurer Ranks** | E→S rank progression, rank badges on quests, rank-locked quests |
+| ⏰ **Quest Timers** | Configurable time limits for quests with countdown display |
+| 📌 **Quest Board** | Physical wall-mounted quest board block — interact with [F] to open quests |
 
 ## 📦 Requirements
 
@@ -52,7 +55,7 @@ Give players **daily** and **weekly** quests — kill mobs, mine ores, chop tree
 
 ```bash
 # 1. Copy JAR files to the server's mods/ folder
-cp EcoTaleQuests-1.2.1.jar /server/mods/
+cp EcoTaleQuests-1.3.1.jar /server/mods/
 
 # 2. Make sure Ecotale-1.0.7.jar is also in mods/
 # 3. Start the server — config & lang files are created automatically
@@ -74,9 +77,9 @@ nano mods/com.crystalrealm_EcoTaleQuests/EcoTaleQuests.json
 | `/quests gui` | Open the quest GUI panel | `ecotalequests.use` |
 | `/quests admin` | Open the admin settings panel | `ecotalequests.admin.settings` |
 | `/quests stats` | Your quest completion statistics | `ecotalequests.use` |
+| `/quests rank` | Your adventurer rank and progress | `ecotalequests.use` |
 | `/quests reload` | Reload config & lang files | `ecotalequests.admin.reload` |
-| `/quests langen` | Switch language to English | — |
-| `/quests langru` | Switch language to Russian | — |
+| `/quests lang <code>` | Switch language (en/ru/pt_br/fr/de/es) | — |
 | `/quests help` | Command reference | — |
 
 > [!NOTE]
@@ -357,6 +360,11 @@ EcoTaleQuests/
 │   └── AdminQuestsGui.java          #   Admin settings panel (InteractiveCustomUIPage)
 │
 ├── assets/
+│   ├── items/
+│   │   ├── ecotale_quest_board.blockymodel  #   Wall-mounted quest board 3D model (Hytale blockymodel)
+│   │   └── ecotale_quest_board.png          #   Procedurally generated 96×64 texture (32x)
+│   ├── icons/
+│   │   └── EcoTale_Quest_Board.png          #   Inventory icon
 │   └── ui/
 │       ├── QuestPanel.ui            #   Player GUI layout
 │       └── AdminPanel.ui            #   Admin GUI layout
@@ -365,7 +373,7 @@ EcoTaleQuests/
 │   └── QuestAbuseGuard.java        #   Cooldowns & world filtering
 │
 ├── commands/
-│   └── QuestsCommandCollection.java  # 12 subcommands (incl. gui, admin, langen, langru)
+│   └── QuestsCommandCollection.java  # 12 subcommands (incl. gui, admin, lang, rank)
 │
 ├── util/
 │   ├── PluginLogger.java           #   SLF4J-compatible logging
@@ -400,13 +408,19 @@ EcoTaleQuests is part of the CrystalRealm EcoTale plugin family:
 
 ## 🌍 Localization
 
-Built-in support for Russian and English. Language files are auto-generated on first start.
+Built-in support for **6 languages**: English, Russian, Brazilian Portuguese, French, German, Spanish. Language files are auto-generated on first start.
 
 **Per-player switching:**
 ```
-/quests langru
-/quests langen
+/quests lang en
+/quests lang ru
+/quests lang pt_br
+/quests lang fr
+/quests lang de
+/quests lang es
 ```
+
+**Shortcut aliases** also work: `/quests langen`, `/quests langru`, `/quests langpt`, `/quests langfr`, `/quests langde`, `/quests langes`
 
 **All quest names are fully localized.** Players see translated quest descriptions (`Добыть: Железо ×24`, `Убить: Любые мобы ×22`) in both GUI and chat — never raw internal IDs.
 
@@ -421,6 +435,16 @@ Built-in support for Russian and English. Language files are auto-generated on f
 **Custom translations:** Edit the generated JSON files in `mods/com.crystalrealm_EcoTaleQuests/lang/`
 
 ## 📝 Changelog
+
+### v1.3.1
+- **New:** Localization support for 6 languages — EN, RU, PT-BR, FR, DE, ES (200+ keys per language)
+- **New:** Universal `/quests lang <code>` command with argument — replaces hardcoded `/quests langen`, `/quests langru`
+- **New:** Shortcut aliases: `/quests langpt`, `/quests langfr`, `/quests langde`, `/quests langes`
+- **New:** Adventurer rank system (E→S) with rank points, rank badges on quests, rank-locked quests
+- **New:** Quest timers — configurable time limits with countdown display and fail-on-timeout
+- **New:** Physical quest board blocks — place in world, interact with [F] to open quest panel
+- **New:** Quest access modes — both / board_only / gui_only (configurable in admin panel)
+- **New:** Admin panel sections for quest boards and access mode settings
 
 ### v1.2.1
 - **Fix:** `earn_coins` and `gain_xp` quests gave disproportionately high rewards (up to 50× base) due to raw amount used in difficulty formula without normalization
@@ -467,7 +491,7 @@ cd EcoTaleQuests
 # Build
 ./gradlew clean jar
 
-# Output: build/libs/EcoTaleQuests-1.2.1.jar
+# Output: build/libs/EcoTaleQuests-1.3.1.jar
 ```
 
 ## 📄 License

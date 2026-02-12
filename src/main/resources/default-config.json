@@ -93,5 +93,30 @@
     "QuestAcceptCooldownMs": 1000,
     "PreventDuplicateTypes": true,
     "AllowedWorlds": []
+  },
+  "Ranks": {
+    "Enabled": true,
+    "PenalizeOnFail": true,
+    "DefaultFailPenalty": 15,
+    "BaseRankPoints": 10,
+    "RankThresholds": {
+      "E": 0,
+      "D": 100,
+      "C": 300,
+      "B": 700,
+      "A": 1500,
+      "S": 3000
+    }
+  },
+  "Boards": {
+    "Enabled": true,
+    "QuestAccessMode": "both"
+  },
+  "Timers": {
+    "DefaultDurationMinutes": 0,
+    "RelogGracePeriodMs": 60000,
+    "TimerCheckIntervalSeconds": 10,
+    "NotifyTimerWarnings": true,
+    "WarningMinutes": [10, 5, 1]
   }
 }

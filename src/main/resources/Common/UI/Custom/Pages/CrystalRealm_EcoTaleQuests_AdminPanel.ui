@@ -182,6 +182,24 @@ $C.@PageOverlay {
           $C.@SecondaryTextButton #S12Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
         }
 
+        // ── Section: Boards ──────────────────────────────────
+        Group { Anchor: (Height: 6); }
+        Label #SecBoards { Style: @SectionLabel; Anchor: (Height: 22); Text: "Boards"; }
+
+        // S13: Quest Access Mode (cycle: both / board_only / gui_only)
+        Group #S13 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S13Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S13Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S13Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // S14: Boards Enabled (toggle)
+        Group #S14 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S14Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S14Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S14Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
         // ── Section: Actions ─────────────────────────────────
         Group { Anchor: (Height: 8); }
         Label #SecActions { Style: @SectionLabel; Anchor: (Height: 22); Text: "Actions"; }

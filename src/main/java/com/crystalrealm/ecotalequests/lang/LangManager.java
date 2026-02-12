@@ -23,7 +23,7 @@ public class LangManager {
     private static final Gson GSON = new Gson();
     private static final Type MAP_TYPE = new TypeToken<Map<String, String>>() {}.getType();
 
-    public static final List<String> SUPPORTED_LANGS = List.of("en", "ru");
+    public static final List<String> SUPPORTED_LANGS = List.of("en", "ru", "pt_br", "fr", "de", "es");
     public static final String DEFAULT_LANG = "ru";
 
     private final Map<String, Map<String, String>> translations = new HashMap<>();

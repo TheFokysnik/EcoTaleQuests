@@ -5,6 +5,7 @@ import com.crystalrealm.ecotalequests.gui.AdminQuestsGui;
 import com.crystalrealm.ecotalequests.gui.PlayerQuestsGui;
 import com.crystalrealm.ecotalequests.lang.LangManager;
 import com.crystalrealm.ecotalequests.model.*;
+import com.crystalrealm.ecotalequests.service.QuestRankService;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.MiniMessageParser;
@@ -38,7 +39,8 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
     /** Keywords that are command/subcommand names (not real arguments). */
     private static final Set<String> COMMAND_KEYWORDS = Set.of(
             "quests", "active", "available", "accept", "abandon",
-            "info", "stats", "reload", "lang", "langen", "langru", "help", "gui", "admin"
+            "info", "stats", "reload", "lang", "langen", "langru", "langpt", "langfr", "langde", "langes", "help", "gui", "admin",
+            "rank"
     );
 
     private static Message msg(String miniMessage) {
@@ -61,6 +63,11 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
         addSubCommand(new LangSubCommand());
         addSubCommand(new LangEnSubCommand());
         addSubCommand(new LangRuSubCommand());
+        addSubCommand(new LangPtSubCommand());
+        addSubCommand(new LangFrSubCommand());
+        addSubCommand(new LangDeSubCommand());
+        addSubCommand(new LangEsSubCommand());
+        addSubCommand(new RankSubCommand());
         addSubCommand(new HelpSubCommand());
     }
 
@@ -205,6 +212,8 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
                 case LIMIT_REACHED   -> context.sendMessage(msg(L(sender, "cmd.accept.limit")));
                 case DUPLICATE_TYPE  -> context.sendMessage(msg(L(sender, "cmd.accept.duplicate")));
                 case ALREADY_ACTIVE  -> context.sendMessage(msg(L(sender, "cmd.accept.already_active")));
+                case RANK_TOO_LOW    -> context.sendMessage(msg(L(sender, "cmd.accept.rank_low")));
+                case SLOTS_FULL      -> context.sendMessage(msg(L(sender, "cmd.accept.slots_full")));
             }
 
             return done();
@@ -367,50 +376,94 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
         }
     }
 
-    // ── /quests lang | /quests langen | /quests langru ──────────
+    // ── /quests lang <code> | /quests langen | /quests langru etc. ──
 
     private class LangSubCommand extends AbstractAsyncCommand {
-        LangSubCommand() { super("lang", "Show language usage"); }
+        LangSubCommand() { super("lang", "Show language usage or switch"); }
 
         @Override
         public CompletableFuture<Void> executeAsync(CommandContext context) {
             if (!context.isPlayer()) return done();
             CommandSender sender = context.sender();
-            context.sendMessage(msg(L(sender, "cmd.lang.usage")));
+
+            String langCode = parseTrailingArg(context);
+            if (langCode == null || langCode.isEmpty()) {
+                context.sendMessage(msg(L(sender, "cmd.lang.usage")));
+                return done();
+            }
+
+            if (plugin.getLangManager().setPlayerLang(sender.getUuid(), langCode.toLowerCase())) {
+                context.sendMessage(msg(L(sender, "cmd.lang.changed")));
+            } else {
+                context.sendMessage(msg(L(sender, "cmd.lang.invalid")));
+            }
             return done();
         }
     }
 
+    /** Shortcut: /quests langen */
     private class LangEnSubCommand extends AbstractAsyncCommand {
         LangEnSubCommand() { super("langen", "Switch to English"); }
-
         @Override
         public CompletableFuture<Void> executeAsync(CommandContext context) {
-            if (!context.isPlayer()) return done();
-            CommandSender sender = context.sender();
-            if (plugin.getLangManager().setPlayerLang(sender.getUuid(), "en")) {
-                context.sendMessage(msg(L(sender, "cmd.lang.changed")));
-            } else {
-                context.sendMessage(msg(L(sender, "cmd.lang.invalid")));
-            }
-            return done();
+            return switchLang(context, "en");
         }
     }
 
+    /** Shortcut: /quests langru */
     private class LangRuSubCommand extends AbstractAsyncCommand {
         LangRuSubCommand() { super("langru", "Switch to Russian"); }
-
         @Override
         public CompletableFuture<Void> executeAsync(CommandContext context) {
-            if (!context.isPlayer()) return done();
-            CommandSender sender = context.sender();
-            if (plugin.getLangManager().setPlayerLang(sender.getUuid(), "ru")) {
-                context.sendMessage(msg(L(sender, "cmd.lang.changed")));
-            } else {
-                context.sendMessage(msg(L(sender, "cmd.lang.invalid")));
-            }
-            return done();
+            return switchLang(context, "ru");
         }
+    }
+
+    /** Shortcut: /quests langpt */
+    private class LangPtSubCommand extends AbstractAsyncCommand {
+        LangPtSubCommand() { super("langpt", "Switch to Portuguese"); }
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            return switchLang(context, "pt_br");
+        }
+    }
+
+    /** Shortcut: /quests langfr */
+    private class LangFrSubCommand extends AbstractAsyncCommand {
+        LangFrSubCommand() { super("langfr", "Switch to French"); }
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            return switchLang(context, "fr");
+        }
+    }
+
+    /** Shortcut: /quests langde */
+    private class LangDeSubCommand extends AbstractAsyncCommand {
+        LangDeSubCommand() { super("langde", "Switch to German"); }
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            return switchLang(context, "de");
+        }
+    }
+
+    /** Shortcut: /quests langes */
+    private class LangEsSubCommand extends AbstractAsyncCommand {
+        LangEsSubCommand() { super("langes", "Switch to Spanish"); }
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            return switchLang(context, "es");
+        }
+    }
+
+    private CompletableFuture<Void> switchLang(CommandContext context, String langCode) {
+        if (!context.isPlayer()) return done();
+        CommandSender sender = context.sender();
+        if (plugin.getLangManager().setPlayerLang(sender.getUuid(), langCode)) {
+            context.sendMessage(msg(L(sender, "cmd.lang.changed")));
+        } else {
+            context.sendMessage(msg(L(sender, "cmd.lang.invalid")));
+        }
+        return done();
     }
 
     // ── /quests gui ─────────────────────────────────────────────
@@ -423,6 +476,12 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
             if (!context.isPlayer()) return done();
             CommandSender sender = context.sender();
             if (!checkPerm(sender, context, "ecotalequests.use")) return done();
+
+            // Check if GUI commands are allowed by access mode
+            if (!plugin.getConfigManager().getConfig().getBoards().isGuiCommandAllowed()) {
+                context.sendMessage(msg(L(sender, "cmd.gui.board_only")));
+                return done();
+            }
 
             LOGGER.info("[quests gui] sender={}", sender.getDisplayName());
             openGuiForSender(context, sender, false);
@@ -493,6 +552,48 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
         }
     }
 
+    // ── /quests rank ──────────────────────────────────────────
+
+    private class RankSubCommand extends AbstractAsyncCommand {
+        RankSubCommand() { super("rank", "Show your adventurer rank"); }
+
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            if (!context.isPlayer()) return done();
+            CommandSender sender = context.sender();
+            if (!checkPerm(sender, context, "ecotalequests.use")) return done();
+
+            UUID uuid = sender.getUuid();
+            QuestRankService rankService = plugin.getQuestTracker().getRankService();
+            PlayerRankData data = rankService.getRankData(uuid);
+            QuestRank rank = data.getRank();
+            QuestRank next = rank.next();
+
+            context.sendMessage(msg(L(sender, "cmd.rank.header")));
+            context.sendMessage(msg(L(sender, "cmd.rank.current",
+                    "rank", rank.name(), "color", rank.getColor())));
+            context.sendMessage(msg(L(sender, "cmd.rank.points",
+                    "points", String.valueOf(data.getRankPoints()))));
+
+            if (next != null) {
+                int needed = next.getRequiredPoints() - data.getRankPoints();
+                int percent = (int) (data.progressToNextRank() * 100);
+                context.sendMessage(msg(L(sender, "cmd.rank.next",
+                        "rank", next.name(),
+                        "needed", String.valueOf(needed),
+                        "percent", String.valueOf(percent))));
+            } else {
+                context.sendMessage(msg(L(sender, "cmd.rank.max")));
+            }
+
+            context.sendMessage(msg(L(sender, "cmd.rank.stats",
+                    "completed", String.valueOf(data.getTotalCompleted()),
+                    "failed", String.valueOf(data.getTotalFailed()))));
+            context.sendMessage(msg(L(sender, "cmd.rank.footer")));
+            return done();
+        }
+    }
+
     // ── /quests help ────────────────────────────────────────────
 
     private class HelpSubCommand extends AbstractAsyncCommand {
@@ -510,6 +611,7 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
             context.sendMessage(msg(L(sender, "cmd.help.abandon")));
             context.sendMessage(msg(L(sender, "cmd.help.info")));
             context.sendMessage(msg(L(sender, "cmd.help.stats")));
+            context.sendMessage(msg(L(sender, "cmd.help.rank")));
             context.sendMessage(msg(L(sender, "cmd.help.gui")));
             context.sendMessage(msg(L(sender, "cmd.help.admin_gui")));
             context.sendMessage(msg(L(sender, "cmd.help.reload")));

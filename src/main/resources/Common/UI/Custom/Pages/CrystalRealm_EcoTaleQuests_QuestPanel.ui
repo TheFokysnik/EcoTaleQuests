@@ -81,6 +81,13 @@ $C.@PageOverlay {
       LayoutMode: Top;
       Padding: (Full: 8);
 
+      // ── Rank display ──────────────────────────────────────
+      Group #RankDisplay {
+        Anchor: (Height: 20);
+        Padding: (Left: 8, Right: 8);
+        Label #RankLabel { Style: @Gray; Text: ""; }
+      }
+
       // ── Banners ────────────────────────────────────────────
       Group #ErrorBanner { Anchor: (Height: 22); Visible: false;
         Label #ErrorText { Style: @Error; Text: ""; }

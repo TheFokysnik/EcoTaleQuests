@@ -14,8 +14,11 @@ public enum QuestStatus {
     /** Квест выполнен, награда выдана. */
     COMPLETED("completed"),
 
-    /** Квест провален (истёк срок). */
+    /** Квест провален (истёк срок пула daily/weekly). */
     EXPIRED("expired"),
+
+    /** Квест провален (истёк таймер выполнения). */
+    FAILED("failed"),
 
     /** Квест отменён игроком. */
     ABANDONED("abandoned");

@@ -5,6 +5,7 @@ import com.crystalrealm.ecotalequests.model.*;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -210,8 +211,99 @@ public class QuestGenerator {
         String name = generateQuestName(candidate.type, candidate.target, period);
         String description = generateQuestDescription(candidate.type, candidate.target, amount);
 
+        // Определяем тип доступа и ранг
+        QuestAccessType accessType = determineAccessType(candidate, amount);
+        int maxSlots = accessType == QuestAccessType.LIMITED_SLOTS ? randomRange(2, 5) : 0;
+        int durationMinutes = determineDuration(candidate, period, accessType);
+        QuestRank requiredRank = determineRequiredRank(candidate, tpl.getMinLevel());
+        int rankPoints = calculateRankPoints(candidate, period, requiredRank);
+
         return new Quest(questId, name, description, period, objective, reward,
-                tpl.getMinLevel(), now, expiresAt);
+                tpl.getMinLevel(), accessType, maxSlots, durationMinutes,
+                requiredRank, rankPoints, now, expiresAt);
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  ACCESS TYPE / RANK / DURATION DETERMINATION
+    // ═════════════════════════════════════════════════════════════
+
+    /**
+     * Определяет тип доступа для квеста.
+     * Высокосложные квесты (редкие мобы, руды) могут быть GLOBAL_UNIQUE или LIMITED_SLOTS.
+     */
+    private QuestAccessType determineAccessType(QuestCandidate candidate, int amount) {
+        int minLevel = candidate.template.getMinLevel();
+
+        // С шансом 15% — GLOBAL_UNIQUE для квестов с minLevel >= 15
+        if (minLevel >= 15 && RANDOM.nextInt(100) < 15) {
+            return QuestAccessType.GLOBAL_UNIQUE;
+        }
+
+        // С шансом 20% — LIMITED_SLOTS для квестов с minLevel >= 8
+        if (minLevel >= 8 && RANDOM.nextInt(100) < 20) {
+            return QuestAccessType.LIMITED_SLOTS;
+        }
+
+        return QuestAccessType.INDIVIDUAL;
+    }
+
+    /**
+     * Определяет время выполнения.
+     */
+    private int determineDuration(QuestCandidate candidate, QuestPeriod period,
+                                  QuestAccessType accessType) {
+        int defaultDuration = config.getTimers().getDefaultDurationMinutes();
+
+        // GLOBAL_UNIQUE и LIMITED_SLOTS всегда имеют таймер
+        if (accessType == QuestAccessType.GLOBAL_UNIQUE) {
+            return period == QuestPeriod.WEEKLY ? 120 : 30;
+        }
+        if (accessType == QuestAccessType.LIMITED_SLOTS) {
+            return period == QuestPeriod.WEEKLY ? 90 : 45;
+        }
+
+        // Если в конфиге задан дефолт > 0, используем его
+        if (defaultDuration > 0) {
+            return defaultDuration;
+        }
+
+        // Иначе: дефолтные таймеры по периоду (daily=60мин, weekly=0=без ограничения)
+        return period == QuestPeriod.DAILY ? 60 : 0;
+    }
+
+    /**
+     * Определяет минимальный ранг для принятия квеста.
+     */
+    @Nullable
+    private QuestRank determineRequiredRank(QuestCandidate candidate, int minLevel) {
+        if (!config.getRanks().isEnabled()) return null;
+
+        // Маппинг: уровень → ранг
+        if (minLevel >= 25) return QuestRank.A;
+        if (minLevel >= 20) return QuestRank.B;
+        if (minLevel >= 10) return QuestRank.C;
+        if (minLevel >= 5) return QuestRank.D;
+        return QuestRank.E;
+    }
+
+    /**
+     * Рассчитывает очки ранга за выполнение.
+     */
+    private int calculateRankPoints(QuestCandidate candidate, QuestPeriod period,
+                                    @Nullable QuestRank requiredRank) {
+        int base = config.getRanks().getBaseRankPoints();
+
+        // Недельные дают больше
+        if (period == QuestPeriod.WEEKLY) base *= 3;
+
+        // Бонус за сложность (по minLevel)
+        int minLevel = candidate.template.getMinLevel();
+        base += minLevel / 5;
+
+        // Бонус за тип доступа
+        // (rank points already scale with required rank via QuestRankService)
+
+        return Math.max(1, base);
     }
 
     // ═════════════════════════════════════════════════════════════

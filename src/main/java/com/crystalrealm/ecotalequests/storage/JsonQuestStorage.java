@@ -36,6 +36,8 @@ public class JsonQuestStorage implements QuestStorage {
     private final Path dataDirectory;
     private final Path questsDir;
     private final Path playersDir;
+    private final Path boardsFile;
+    private final Path assignmentsFile;
 
     /** Кеш квестов: questId → Quest */
     private final Map<UUID, Quest> questCache = new ConcurrentHashMap<>();
@@ -49,10 +51,21 @@ public class JsonQuestStorage implements QuestStorage {
     /** Общее кол-во завершённых: playerUuid → count */
     private final Map<UUID, Integer> completedCounts = new ConcurrentHashMap<>();
 
+    /** Ранговые данные: playerUuid → PlayerRankData */
+    private final Map<UUID, PlayerRankData> rankDataCache = new ConcurrentHashMap<>();
+
+    /** Доски квестов */
+    private final List<QuestBoardLocation> boardLocations = Collections.synchronizedList(new ArrayList<>());
+
+    /** Назначения квестов */
+    private final List<QuestAssignment> questAssignments = Collections.synchronizedList(new ArrayList<>());
+
     public JsonQuestStorage(@Nonnull Path dataDirectory) {
         this.dataDirectory = dataDirectory;
         this.questsDir = dataDirectory.resolve("quests");
         this.playersDir = dataDirectory.resolve("players");
+        this.boardsFile = dataDirectory.resolve("boards.json");
+        this.assignmentsFile = dataDirectory.resolve("assignments.json");
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -72,8 +85,14 @@ public class JsonQuestStorage implements QuestStorage {
             // Загружаем данные игроков
             loadAllPlayerData();
 
-            LOGGER.info("JsonQuestStorage initialized. Quests: {}, Players: {}",
-                    questCache.size(), playerCache.size());
+            // Загружаем доски квестов
+            loadBoardsFromDisk();
+
+            // Загружаем назначения
+            loadAssignmentsFromDisk();
+
+            LOGGER.info("JsonQuestStorage initialized. Quests: {}, Players: {}, Boards: {}, Assignments: {}",
+                    questCache.size(), playerCache.size(), boardLocations.size(), questAssignments.size());
         } catch (IOException e) {
             LOGGER.error("Failed to initialize storage", e);
         }
@@ -85,6 +104,8 @@ public class JsonQuestStorage implements QuestStorage {
             saveQuestPoolToDisk(QuestPeriod.DAILY);
             saveQuestPoolToDisk(QuestPeriod.WEEKLY);
             saveAllPlayerData();
+            saveBoardsToDisk();
+            saveAssignmentsToDisk();
             LOGGER.debug("Storage saved successfully.");
         } catch (Exception e) {
             LOGGER.error("Failed to save storage", e);
@@ -98,6 +119,9 @@ public class JsonQuestStorage implements QuestStorage {
         playerCache.clear();
         abandonStats.clear();
         completedCounts.clear();
+        rankDataCache.clear();
+        boardLocations.clear();
+        questAssignments.clear();
         LOGGER.info("JsonQuestStorage shut down.");
     }
 
@@ -143,6 +167,9 @@ public class JsonQuestStorage implements QuestStorage {
         if (data.getStatus() == QuestStatus.COMPLETED) {
             completedCounts.merge(data.getPlayerUuid(), 1, Integer::sum);
         }
+
+        // Persist to disk immediately so data survives crashes/restarts
+        savePlayerFile(data.getPlayerUuid());
     }
 
     @Override
@@ -190,6 +217,68 @@ public class JsonQuestStorage implements QuestStorage {
         String today = LocalDate.now().toString();
         abandonStats.computeIfAbsent(playerUuid, k -> new ConcurrentHashMap<>())
                 .merge(today, 1, Integer::sum);
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  RANK DATA
+    // ═════════════════════════════════════════════════════════════
+
+    @Override
+    public PlayerRankData loadRankData(@Nonnull UUID playerUuid) {
+        return rankDataCache.get(playerUuid);
+    }
+
+    @Override
+    public void saveRankData(@Nonnull PlayerRankData data) {
+        rankDataCache.put(data.getPlayerUuid(), data);
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  BOARD LOCATIONS
+    // ═════════════════════════════════════════════════════════════
+
+    @Override
+    @Nonnull
+    public List<QuestBoardLocation> loadBoardLocations() {
+        return new ArrayList<>(boardLocations);
+    }
+
+    @Override
+    public void saveBoardLocation(@Nonnull QuestBoardLocation board) {
+        // Remove if already exists (update)
+        boardLocations.removeIf(b -> b.getBoardId().equals(board.getBoardId()));
+        boardLocations.add(board);
+        saveBoardsToDisk();
+    }
+
+    @Override
+    public void removeBoardLocation(@Nonnull UUID boardId) {
+        boardLocations.removeIf(b -> b.getBoardId().equals(boardId));
+        saveBoardsToDisk();
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  QUEST ASSIGNMENTS
+    // ═════════════════════════════════════════════════════════════
+
+    @Override
+    @Nonnull
+    public List<QuestAssignment> loadActiveAssignments() {
+        return questAssignments.stream()
+                .filter(a -> !a.isReleased() && !a.isTimerExpired())
+                .toList();
+    }
+
+    @Override
+    public void saveAssignment(@Nonnull QuestAssignment assignment) {
+        // Remove existing entry for same quest+player
+        questAssignments.removeIf(a ->
+                a.getQuestId().equals(assignment.getQuestId())
+                && a.getPlayerUuid().equals(assignment.getPlayerUuid()));
+        if (!assignment.isReleased()) {
+            questAssignments.add(assignment);
+        }
+        saveAssignmentsToDisk();
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -274,6 +363,23 @@ public class JsonQuestStorage implements QuestStorage {
             if (data.abandonHistory != null) {
                 abandonStats.put(playerUuid, new ConcurrentHashMap<>(data.abandonHistory));
             }
+
+            // Load rank data
+            if (data.rankPoints > 0 || data.totalCompleted > 0 || data.totalFailed > 0) {
+                PlayerRankData rankData = new PlayerRankData(
+                        playerUuid, data.rankPoints, data.totalCompleted, data.totalFailed);
+                rankDataCache.put(playerUuid, rankData);
+            }
+
+            // Restore quest definitions into questCache so active quests are displayable
+            if (data.questDefinitions != null) {
+                for (QuestData qd : data.questDefinitions) {
+                    Quest quest = qd.toQuest();
+                    if (quest != null) {
+                        questCache.putIfAbsent(quest.getQuestId(), quest);
+                    }
+                }
+            }
         } catch (Exception e) {
             LOGGER.error("Failed to load player file: " + file, e);
         }
@@ -294,10 +400,26 @@ public class JsonQuestStorage implements QuestStorage {
         data.completedTotal = completedCounts.getOrDefault(playerUuid, 0);
         data.abandonHistory = abandonStats.get(playerUuid);
 
+        // Rank data
+        PlayerRankData rankData = rankDataCache.get(playerUuid);
+        if (rankData != null) {
+            data.rankPoints = rankData.getRankPoints();
+            data.totalCompleted = rankData.getTotalCompleted();
+            data.totalFailed = rankData.getTotalFailed();
+        }
+
         Map<UUID, PlayerQuestData> quests = playerCache.get(playerUuid);
         if (quests != null) {
             data.quests = quests.values().stream()
                     .map(PlayerQuestEntry::fromPlayerQuestData)
+                    .toList();
+
+            // Snapshot quest definitions for ACTIVE quests so they survive pool refresh / restart
+            data.questDefinitions = quests.values().stream()
+                    .filter(pqd -> pqd.getStatus() == QuestStatus.ACTIVE)
+                    .map(pqd -> questCache.get(pqd.getQuestId()))
+                    .filter(java.util.Objects::nonNull)
+                    .map(QuestData::fromQuest)
                     .toList();
         }
 
@@ -305,6 +427,75 @@ public class JsonQuestStorage implements QuestStorage {
             GSON.toJson(data, writer);
         } catch (IOException e) {
             LOGGER.error("Failed to save player file: " + file, e);
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  DISK I/O — Boards
+    // ═════════════════════════════════════════════════════════════
+
+    private void loadBoardsFromDisk() {
+        if (!Files.exists(boardsFile)) return;
+        try (Reader reader = new InputStreamReader(Files.newInputStream(boardsFile), StandardCharsets.UTF_8)) {
+            Type listType = new TypeToken<List<BoardData>>() {}.getType();
+            List<BoardData> data = GSON.fromJson(reader, listType);
+            if (data != null) {
+                for (BoardData bd : data) {
+                    QuestBoardLocation board = bd.toBoard();
+                    if (board != null) boardLocations.add(board);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to load boards", e);
+        }
+    }
+
+    private void saveBoardsToDisk() {
+        try {
+            List<BoardData> data = boardLocations.stream()
+                    .map(BoardData::fromBoard)
+                    .toList();
+            try (Writer writer = new OutputStreamWriter(Files.newOutputStream(boardsFile), StandardCharsets.UTF_8)) {
+                GSON.toJson(data, writer);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to save boards", e);
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  DISK I/O — Assignments
+    // ═════════════════════════════════════════════════════════════
+
+    private void loadAssignmentsFromDisk() {
+        if (!Files.exists(assignmentsFile)) return;
+        try (Reader reader = new InputStreamReader(Files.newInputStream(assignmentsFile), StandardCharsets.UTF_8)) {
+            Type listType = new TypeToken<List<AssignmentData>>() {}.getType();
+            List<AssignmentData> data = GSON.fromJson(reader, listType);
+            if (data != null) {
+                for (AssignmentData ad : data) {
+                    QuestAssignment assignment = ad.toAssignment();
+                    if (assignment != null && !assignment.isTimerExpired()) {
+                        questAssignments.add(assignment);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to load assignments", e);
+        }
+    }
+
+    private void saveAssignmentsToDisk() {
+        try {
+            List<AssignmentData> data = questAssignments.stream()
+                    .filter(a -> !a.isReleased())
+                    .map(AssignmentData::fromAssignment)
+                    .toList();
+            try (Writer writer = new OutputStreamWriter(Files.newOutputStream(assignmentsFile), StandardCharsets.UTF_8)) {
+                GSON.toJson(data, writer);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to save assignments", e);
         }
     }
 
@@ -324,6 +515,11 @@ public class JsonQuestStorage implements QuestStorage {
         double rewardCoins;
         int rewardXp;
         int minLevel;
+        String accessType;
+        int maxSlots;
+        int durationMinutes;
+        String requiredRank;
+        int rankPoints;
         long createdAt;
         long expiresAt;
 
@@ -334,7 +530,13 @@ public class JsonQuestStorage implements QuestStorage {
                         QuestPeriod.fromId(period),
                         new QuestObjective(QuestType.fromId(objectiveType), objectiveTarget, objectiveAmount),
                         new QuestReward(rewardCoins, rewardXp),
-                        minLevel, createdAt, expiresAt
+                        minLevel,
+                        accessType != null ? QuestAccessType.fromId(accessType) : QuestAccessType.INDIVIDUAL,
+                        maxSlots,
+                        durationMinutes,
+                        requiredRank != null ? QuestRank.fromId(requiredRank) : null,
+                        rankPoints > 0 ? rankPoints : 10,
+                        createdAt, expiresAt
                 );
             } catch (Exception e) {
                 return null;
@@ -353,6 +555,11 @@ public class JsonQuestStorage implements QuestStorage {
             d.rewardCoins = q.getReward().getBaseCoins();
             d.rewardXp = q.getReward().getBonusXp();
             d.minLevel = q.getMinLevel();
+            d.accessType = q.getAccessType().getId();
+            d.maxSlots = q.getMaxSlots();
+            d.durationMinutes = q.getDurationMinutes();
+            d.requiredRank = q.getRequiredRank() != null ? q.getRequiredRank().name() : null;
+            d.rankPoints = q.getRankPoints();
             d.createdAt = q.getCreatedAt();
             d.expiresAt = q.getExpiresAt();
             return d;
@@ -365,6 +572,12 @@ public class JsonQuestStorage implements QuestStorage {
         int completedTotal;
         List<PlayerQuestEntry> quests;
         Map<String, Integer> abandonHistory;
+        // Rank data
+        int rankPoints;
+        int totalCompleted;
+        int totalFailed;
+        // Quest definitions snapshot — persisted so active quests survive pool refresh / restart
+        List<QuestData> questDefinitions;
     }
 
     /** Serializable player quest entry. */
@@ -398,6 +611,70 @@ public class JsonQuestStorage implements QuestStorage {
             e.acceptedAt = d.getAcceptedAt();
             e.completedAt = d.getCompletedAt();
             return e;
+        }
+    }
+
+    /** Serializable board data. */
+    static class BoardData {
+        String boardId;
+        String worldName;
+        int x, y, z;
+        String type;
+        String placedBy;
+        long placedAt;
+
+        QuestBoardLocation toBoard() {
+            try {
+                return new QuestBoardLocation(
+                        UUID.fromString(boardId), worldName, x, y, z,
+                        QuestBoardLocation.BoardType.fromId(type),
+                        UUID.fromString(placedBy), placedAt
+                );
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        static BoardData fromBoard(QuestBoardLocation b) {
+            BoardData d = new BoardData();
+            d.boardId = b.getBoardId().toString();
+            d.worldName = b.getWorldName();
+            d.x = b.getX();
+            d.y = b.getY();
+            d.z = b.getZ();
+            d.type = b.getType().getId();
+            d.placedBy = b.getPlacedBy().toString();
+            d.placedAt = b.getPlacedAt();
+            return d;
+        }
+    }
+
+    /** Serializable assignment data. */
+    static class AssignmentData {
+        String questId;
+        String playerUuid;
+        long assignedAt;
+        long expiresAt;
+
+        QuestAssignment toAssignment() {
+            try {
+                return new QuestAssignment(
+                        UUID.fromString(questId),
+                        UUID.fromString(playerUuid),
+                        assignedAt, expiresAt
+                );
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        static AssignmentData fromAssignment(QuestAssignment a) {
+            AssignmentData d = new AssignmentData();
+            d.questId = a.getQuestId().toString();
+            d.playerUuid = a.getPlayerUuid().toString();
+            d.assignedAt = a.getAssignedAt();
+            d.expiresAt = a.getExpiresAt();
+            return d;
         }
     }
 }

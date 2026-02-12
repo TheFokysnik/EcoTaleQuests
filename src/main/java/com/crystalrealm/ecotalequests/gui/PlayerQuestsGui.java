@@ -3,6 +3,8 @@ package com.crystalrealm.ecotalequests.gui;
 import com.crystalrealm.ecotalequests.EcoTaleQuestsPlugin;
 import com.crystalrealm.ecotalequests.lang.LangManager;
 import com.crystalrealm.ecotalequests.model.*;
+import com.crystalrealm.ecotalequests.service.QuestAvailabilityManager;
+import com.crystalrealm.ecotalequests.service.TimerService;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.MiniMessageParser;
@@ -111,6 +113,14 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
 
         // Title
         cmd.set("#TitleLabel.Text", L(lang, "gui.title"));
+
+        // Rank display
+        QuestRank playerRank = plugin.getQuestTracker().getRankService().getPlayerRank(playerUuid);
+        PlayerRankData rankData = plugin.getQuestTracker().getRankService().getRankData(playerUuid);
+        cmd.set("#RankLabel.Text", L(lang, "gui.rank_display",
+                "rank", playerRank.name(),
+                "points", String.valueOf(rankData.getRankPoints())));
+        cmd.set("#RankLabel.Visible", true);
 
         // Tab labels
         cmd.set("#TabDaily.Text", L(lang, "quest.period.daily"));
@@ -269,9 +279,14 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
             case QUEST_EXPIRED   -> L(lang, "cmd.accept.expired");
             case QUEST_NOT_FOUND -> L(lang, "cmd.accept.not_found",
                     "id", questId.toString().substring(0, 8));
+            case RANK_TOO_LOW    -> L(lang, "cmd.accept.rank_low");
+            case SLOTS_FULL      -> L(lang, "cmd.accept.slots_full");
         };
 
-        String tab = quest.getPeriod() == QuestPeriod.WEEKLY ? "weekly" : "daily";
+        // On success, switch to active tab so player sees their new quest
+        String tab = result == QuestTracker.AcceptResult.SUCCESS
+                ? "active"
+                : (quest.getPeriod() == QuestPeriod.WEEKLY ? "weekly" : "daily");
         refreshPage(result == QuestTracker.AcceptResult.SUCCESS ? null : msg,
                 result == QuestTracker.AcceptResult.SUCCESS ? msg : null,
                 tab);
@@ -316,6 +331,8 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
 
     private void updateDailyData(UICommandBuilder cmd, LangManager lang) {
         List<Quest> quests = plugin.getQuestTracker().getAvailableQuests(playerUuid, QuestPeriod.DAILY);
+        QuestAvailabilityManager avail = plugin.getQuestTracker().getAvailabilityManager();
+        QuestRank playerRank = plugin.getQuestTracker().getRankService().getPlayerRank(playerUuid);
         String acceptText = L(lang, "gui.btn.accept");
 
         boolean empty = quests.isEmpty();
@@ -327,9 +344,33 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
             if (i < quests.size()) {
                 Quest q = quests.get(i);
                 cmd.set("#D" + n + ".Visible", true);
-                cmd.set("#D" + n + "Name.Text", stripForUI(localizedDesc(lang, q)));
+
+                // Quest name with rank badge
+                String nameText = formatQuestName(lang, q);
+                cmd.set("#D" + n + "Name.Text", stripForUI(nameText));
                 cmd.set("#D" + n + "Reward.Text", "+" + MessageUtil.formatCoins(q.getReward().getBaseCoins()) + "$");
-                cmd.set("#D" + n + "Btn.Text", acceptText);
+
+                // Availability & rank indicators on button
+                boolean canAccept = true;
+                String btnText = acceptText;
+
+                // Rank check
+                if (q.getRequiredRank() != null && !playerRank.canAccess(q.getRequiredRank())) {
+                    btnText = L(lang, "gui.btn.locked", "rank", q.getRequiredRank().name());
+                    canAccept = false;
+                }
+
+                // Slot availability
+                if (canAccept && !avail.isAvailable(q, playerUuid)) {
+                    int occupied = avail.getOccupiedSlots(q.getQuestId());
+                    int maxSlots = q.getMaxSlots();
+                    btnText = L(lang, "gui.btn.occupied",
+                            "current", String.valueOf(occupied),
+                            "max", String.valueOf(maxSlots));
+                    canAccept = false;
+                }
+
+                cmd.set("#D" + n + "Btn.Text", btnText);
             } else {
                 cmd.set("#D" + n + ".Visible", false);
             }
@@ -338,6 +379,8 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
 
     private void updateWeeklyData(UICommandBuilder cmd, LangManager lang) {
         List<Quest> quests = plugin.getQuestTracker().getAvailableQuests(playerUuid, QuestPeriod.WEEKLY);
+        QuestAvailabilityManager avail = plugin.getQuestTracker().getAvailabilityManager();
+        QuestRank playerRank = plugin.getQuestTracker().getRankService().getPlayerRank(playerUuid);
         String acceptText = L(lang, "gui.btn.accept");
 
         boolean empty = quests.isEmpty();
@@ -349,9 +392,25 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
             if (i < quests.size()) {
                 Quest q = quests.get(i);
                 cmd.set("#W" + n + ".Visible", true);
-                cmd.set("#W" + n + "Name.Text", stripForUI(localizedDesc(lang, q)));
+
+                String nameText = formatQuestName(lang, q);
+                cmd.set("#W" + n + "Name.Text", stripForUI(nameText));
                 cmd.set("#W" + n + "Reward.Text", "+" + MessageUtil.formatCoins(q.getReward().getBaseCoins()) + "$");
-                cmd.set("#W" + n + "Btn.Text", acceptText);
+
+                boolean canAccept = true;
+                String btnText = acceptText;
+
+                if (q.getRequiredRank() != null && !playerRank.canAccess(q.getRequiredRank())) {
+                    btnText = L(lang, "gui.btn.locked");
+                    canAccept = false;
+                }
+
+                if (canAccept && !avail.isAvailable(q, playerUuid)) {
+                    btnText = L(lang, "gui.btn.occupied");
+                    canAccept = false;
+                }
+
+                cmd.set("#W" + n + "Btn.Text", btnText);
             } else {
                 cmd.set("#W" + n + ".Visible", false);
             }
@@ -360,7 +419,10 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
 
     private void updateActiveData(UICommandBuilder cmd, LangManager lang) {
         List<PlayerQuestData> active = plugin.getQuestTracker().getActiveQuests(playerUuid);
+        TimerService timerService = plugin.getQuestTracker().getTimerService();
         String abandonText = L(lang, "gui.btn.abandon");
+
+        LOGGER.info("[updateActiveData] player={} active quests count={}", playerUuid, active.size());
 
         boolean empty = active.isEmpty();
         cmd.set("#NoActiveMsg.Visible", empty);
@@ -372,6 +434,7 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
                 PlayerQuestData pqd = active.get(i);
                 Quest quest = plugin.getQuestTracker().getQuest(pqd.getQuestId());
                 if (quest == null) {
+                    LOGGER.warn("[updateActiveData] Quest definition MISSING for questId={} (slot A{})", pqd.getQuestId(), n);
                     cmd.set("#A" + n + ".Visible", false);
                     continue;
                 }
@@ -380,10 +443,19 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
                 double current = pqd.getCurrentProgress();
                 int pct = required > 0 ? (int) ((current / required) * 100) : 100;
                 String periodIcon = quest.getPeriod() == QuestPeriod.WEEKLY ? "[W]" : "[D]";
-                String progressText = periodIcon + " " + (int) current + "/" + (int) required + " (" + pct + "%)";
+
+                // Добавляем таймер если есть
+                String timerText = "";
+                if (quest.hasTimer()) {
+                    String timeLeft = timerService.formatRemainingTime(quest.getQuestId(), playerUuid);
+                    timerText = " [" + timeLeft + "]";
+                }
+
+                String progressText = periodIcon + " " + (int) current + "/" + (int) required
+                        + " (" + pct + "%)" + timerText;
 
                 cmd.set("#A" + n + ".Visible", true);
-                cmd.set("#A" + n + "Name.Text", stripForUI(localizedDesc(lang, quest)));
+                cmd.set("#A" + n + "Name.Text", stripForUI(formatQuestName(lang, quest)));
                 cmd.set("#A" + n + "Reward.Text", "+" + MessageUtil.formatCoins(quest.getReward().getBaseCoins()) + "$");
                 cmd.set("#A" + n + "Progress.Text", progressText);
                 cmd.set("#A" + n + "Btn.Text", abandonText);
@@ -433,6 +505,36 @@ public final class PlayerQuestsGui extends InteractiveCustomUIPage<PlayerQuestsG
         return L(lang, typeKey,
                 "amount", String.valueOf((int) obj.getRequiredAmount()),
                 "target", display);
+    }
+
+    /**
+     * Формирует имя квеста с бейджами ранга и типа доступа.
+     */
+    private String formatQuestName(LangManager lang, Quest quest) {
+        StringBuilder sb = new StringBuilder();
+
+        // Ранг бейдж (показываем только для квестов выше E-ранга — E доступен всем)
+        if (quest.getRequiredRank() != null && quest.getRequiredRank() != QuestRank.E) {
+            sb.append("[").append(quest.getRequiredRank().name()).append("] ");
+        }
+
+        // Тип доступа бейдж
+        if (quest.getAccessType() == QuestAccessType.GLOBAL_UNIQUE) {
+            sb.append("(!) ");
+        } else if (quest.getAccessType() == QuestAccessType.LIMITED_SLOTS) {
+            QuestAvailabilityManager avail = plugin.getQuestTracker().getAvailabilityManager();
+            int occupied = avail.getOccupiedSlots(quest.getQuestId());
+            sb.append("(").append(occupied).append("/").append(quest.getMaxSlots()).append(") ");
+        }
+
+        sb.append(localizedDesc(lang, quest));
+
+        // Таймер маркер (показываем общую длительность квеста)
+        if (quest.hasTimer()) {
+            sb.append(L(lang, "gui.timer_suffix", "time", String.valueOf(quest.getDurationMinutes())));
+        }
+
+        return sb.toString();
     }
 
     /** Strip non-renderable chars and MiniMessage tags for Hytale UI labels. */

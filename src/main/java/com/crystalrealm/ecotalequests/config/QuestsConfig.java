@@ -14,6 +14,9 @@ public class QuestsConfig {
     private RewardsSection Rewards = new RewardsSection();
     private VipTiersSection VipTiers = new VipTiersSection();
     private ProtectionSection Protection = new ProtectionSection();
+    private RanksSection Ranks = new RanksSection();
+    private BoardsSection Boards = new BoardsSection();
+    private TimerSection Timers = new TimerSection();
 
     // ─── Getters ──────────────────────────────────────────────────
 
@@ -23,6 +26,9 @@ public class QuestsConfig {
     public RewardsSection getRewards() { return Rewards; }
     public VipTiersSection getVipTiers() { return VipTiers; }
     public ProtectionSection getProtection() { return Protection; }
+    public RanksSection getRanks() { return Ranks; }
+    public BoardsSection getBoards() { return Boards; }
+    public TimerSection getTimers() { return Timers; }
 
     // ═════════════════════════════════════════════════════════════
     //  Секции
@@ -197,5 +203,68 @@ public class QuestsConfig {
         public boolean isPreventDuplicateTypes() { return PreventDuplicateTypes; }
         public void setPreventDuplicateTypes(boolean v) { this.PreventDuplicateTypes = v; }
         public List<String> getAllowedWorlds() { return AllowedWorlds; }
+    }
+
+    /** Система рангов квестовой гильдии. */
+    public static class RanksSection {
+        private boolean Enabled = true;
+        private boolean PenalizeOnFail = true;
+        private int DefaultFailPenalty = 15;
+        private int BaseRankPoints = 10;
+        private Map<String, Integer> RankThresholds = new LinkedHashMap<>();
+
+        public RanksSection() {
+            RankThresholds.put("E", 0);
+            RankThresholds.put("D", 100);
+            RankThresholds.put("C", 300);
+            RankThresholds.put("B", 700);
+            RankThresholds.put("A", 1500);
+            RankThresholds.put("S", 3000);
+        }
+
+        public boolean isEnabled() { return Enabled; }
+        public void setEnabled(boolean v) { this.Enabled = v; }
+        public boolean isPenalizeOnFail() { return PenalizeOnFail; }
+        public void setPenalizeOnFail(boolean v) { this.PenalizeOnFail = v; }
+        public int getDefaultFailPenalty() { return DefaultFailPenalty; }
+        public void setDefaultFailPenalty(int v) { this.DefaultFailPenalty = v; }
+        public int getBaseRankPoints() { return BaseRankPoints; }
+        public Map<String, Integer> getRankThresholds() { return RankThresholds; }
+    }
+
+    /** Настройки досок квестов. */
+    public static class BoardsSection {
+        private boolean Enabled = true;
+        /**
+         * Quest access mode:
+         * <ul>
+         *   <li><b>both</b> — quests available via GUI commands AND physical board (default)</li>
+         *   <li><b>board_only</b> — only physical board interaction opens quest panel</li>
+         *   <li><b>gui_only</b> — only /quests gui command opens quest panel</li>
+         * </ul>
+         */
+        private String QuestAccessMode = "both";
+
+        public boolean isEnabled() { return Enabled; }
+        public void setEnabled(boolean v) { this.Enabled = v; }
+        public String getQuestAccessMode() { return QuestAccessMode != null ? QuestAccessMode : "both"; }
+        public void setQuestAccessMode(String v) { this.QuestAccessMode = v; }
+        public boolean isBoardAllowed() { String m = getQuestAccessMode(); return "both".equalsIgnoreCase(m) || "board_only".equalsIgnoreCase(m); }
+        public boolean isGuiCommandAllowed() { String m = getQuestAccessMode(); return "both".equalsIgnoreCase(m) || "gui_only".equalsIgnoreCase(m); }
+    }
+
+    /** Настройки таймеров квестов. */
+    public static class TimerSection {
+        private int DefaultDurationMinutes = 0;
+        private long RelogGracePeriodMs = 60000;
+        private int TimerCheckIntervalSeconds = 10;
+        private boolean NotifyTimerWarnings = true;
+        private List<Integer> WarningMinutes = List.of(10, 5, 1);
+
+        public int getDefaultDurationMinutes() { return DefaultDurationMinutes; }
+        public long getRelogGracePeriodMs() { return RelogGracePeriodMs; }
+        public int getTimerCheckIntervalSeconds() { return TimerCheckIntervalSeconds; }
+        public boolean isNotifyTimerWarnings() { return NotifyTimerWarnings; }
+        public List<Integer> getWarningMinutes() { return WarningMinutes; }
     }
 }
