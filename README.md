@@ -5,7 +5,7 @@
 Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **native GUI panel**, an **admin settings panel**, **adventurer rank system**, **quest timers**, **physical quest boards**, fully localized quest names (6 languages), and real-time chat progress notifications.
 
 ![Hytale Server Mod](https://img.shields.io/badge/Hytale-Server%20Mod-0ea5e9?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.3.1-10b981?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.3.2-10b981?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17+-f97316?style=for-the-badge&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-a855f7?style=for-the-badge)
 ![Ecotale](https://img.shields.io/badge/Ecotale-1.0.7-6366f1?style=for-the-badge)
@@ -435,6 +435,15 @@ Built-in support for **6 languages**: English, Russian, Brazilian Portuguese, Fr
 **Custom translations:** Edit the generated JSON files in `mods/com.crystalrealm_EcoTaleQuests/lang/`
 
 ## 📝 Changelog
+
+### v1.3.2
+
+### Bug Fixes
+- **[CRITICAL] Fixed startup crash** — `NoClassDefFoundError: GameMode`. Replaced `setPermissionGroup(GameMode.Adventure)` with string-based API `setPermissionGroups("Adventure")` which doesn't require importing the server enum.
+- **Fixed permissions for regular players** — `/quests` command is now accessible in Adventure mode via `setPermissionGroups("Adventure")`.
+
+### Changes
+- Added LuckPerms support (optional dependency).
 
 ### v1.3.1
 - **New:** Localization support for 6 languages — EN, RU, PT-BR, FR, DE, ES (200+ keys per language)

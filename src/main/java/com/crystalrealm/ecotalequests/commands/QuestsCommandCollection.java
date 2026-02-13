@@ -9,6 +9,7 @@ import com.crystalrealm.ecotalequests.service.QuestRankService;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.MiniMessageParser;
+import com.crystalrealm.ecotalequests.util.PermissionHelper;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
 
 import com.hypixel.hytale.component.ComponentType;
@@ -49,6 +50,7 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
 
     public QuestsCommandCollection(EcoTaleQuestsPlugin plugin) {
         super("quests", "EcoTaleQuests — daily and weekly quest system");
+        this.setPermissionGroups("Adventure");
         this.plugin = plugin;
 
         addSubCommand(new ActiveSubCommand());
@@ -367,6 +369,7 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
             if (success) {
                 String newLang = plugin.getConfigManager().getConfig().getGeneral().getLanguage();
                 plugin.getLangManager().reload(newLang);
+                PermissionHelper.getInstance().reload();
                 context.sendMessage(msg(L(sender, "cmd.reload.success")));
                 LOGGER.info("Configuration reloaded by {}", sender.getDisplayName());
             } else {
@@ -511,44 +514,80 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
      * Must resolve PlayerRef on the world thread via reflection.
      */
     private void openGuiForSender(CommandContext context, CommandSender sender, boolean admin) {
-        if (sender instanceof Player player) {
-            Ref<EntityStore> ref = player.getReference();
-            if (ref != null && ref.isValid()) {
-                Store<EntityStore> store = ref.getStore();
-                try {
-                    java.lang.reflect.Method getExt = store.getClass()
-                            .getMethod("getExternalData");
-                    Object extData = getExt.invoke(store);
-                    java.lang.reflect.Method getWorld = extData.getClass()
-                            .getMethod("getWorld");
-                    Object worldObj = getWorld.invoke(extData);
+        String label = admin ? "admin" : "gui";
 
-                    if (worldObj instanceof java.util.concurrent.Executor worldExec) {
-                        CompletableFuture.runAsync(() -> {
-                            try {
-                                java.lang.reflect.Method getComp = store.getClass()
-                                        .getMethod("getComponent", Ref.class, ComponentType.class);
-                                Object result = getComp.invoke(store, ref,
-                                        PlayerRef.getComponentType());
-                                if (result instanceof PlayerRef playerRef) {
-                                    if (admin) {
-                                        AdminQuestsGui.open(plugin, playerRef, ref, store, sender.getUuid());
-                                    } else {
-                                        PlayerQuestsGui.open(plugin, playerRef, ref, store, sender.getUuid());
-                                    }
-                                }
-                            } catch (Exception e) {
-                                LOGGER.error("[quests {}] failed on WorldThread", admin ? "admin" : "gui", e);
-                            }
-                        }, worldExec);
-                    } else {
-                        LOGGER.warn("[quests {}] World is not an Executor", admin ? "admin" : "gui");
-                    }
-                } catch (ReflectiveOperationException e) {
-                    LOGGER.error("[quests {}] reflection failed", admin ? "admin" : "gui", e);
-                    context.sendMessage(msg("<red>Failed to open GUI.</red>"));
-                }
+        // Try direct cast first, then reflection fallback (LuckPerms compatibility)
+        Player player = null;
+        if (sender instanceof Player p) {
+            player = p;
+        } else {
+            try {
+                java.lang.reflect.Method getPlayer = sender.getClass().getMethod("getPlayer");
+                Object result = getPlayer.invoke(sender);
+                if (result instanceof Player p) player = p;
+            } catch (Exception ignored) {}
+
+            if (player == null) {
+                try {
+                    java.lang.reflect.Method getHandle = sender.getClass().getMethod("getHandle");
+                    Object handle = getHandle.invoke(sender);
+                    if (handle instanceof Player p) player = p;
+                } catch (Exception ignored) {}
             }
+        }
+
+        if (player == null) {
+            LOGGER.warn("[quests {}] Could not resolve Player from sender: {} (class: {})",
+                    label, sender.getDisplayName(), sender.getClass().getName());
+            context.sendMessage(msg("<red>Failed to resolve player entity.</red>"));
+            return;
+        }
+
+        Ref<EntityStore> ref = player.getReference();
+        if (ref == null || !ref.isValid()) {
+            LOGGER.warn("[quests {}] Player ref is null/invalid for {}", label, sender.getDisplayName());
+            context.sendMessage(msg("<red>Player reference is not available. Try again.</red>"));
+            return;
+        }
+
+        Store<EntityStore> store = ref.getStore();
+        try {
+            java.lang.reflect.Method getExt = store.getClass()
+                    .getMethod("getExternalData");
+            Object extData = getExt.invoke(store);
+            java.lang.reflect.Method getWorld = extData.getClass()
+                    .getMethod("getWorld");
+            Object worldObj = getWorld.invoke(extData);
+
+            if (worldObj instanceof java.util.concurrent.Executor worldExec) {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        java.lang.reflect.Method getComp = store.getClass()
+                                .getMethod("getComponent", Ref.class, ComponentType.class);
+                        Object result = getComp.invoke(store, ref,
+                                PlayerRef.getComponentType());
+                        if (result instanceof PlayerRef playerRef) {
+                            if (admin) {
+                                AdminQuestsGui.open(plugin, playerRef, ref, store, sender.getUuid());
+                            } else {
+                                PlayerQuestsGui.open(plugin, playerRef, ref, store, sender.getUuid());
+                            }
+                        } else {
+                            LOGGER.error("[quests {}] getComponent returned non-PlayerRef: {}",
+                                    label, result != null ? result.getClass().getName() : "null");
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("[quests {}] failed on WorldThread", label, e);
+                    }
+                }, worldExec);
+            } else {
+                LOGGER.warn("[quests {}] World is not an Executor: {}",
+                        label, worldObj != null ? worldObj.getClass().getName() : "null");
+                context.sendMessage(msg("<red>Failed to open GUI — world context unavailable.</red>"));
+            }
+        } catch (ReflectiveOperationException e) {
+            LOGGER.error("[quests {}] reflection failed", label, e);
+            context.sendMessage(msg("<red>Failed to open GUI.</red>"));
         }
     }
 
@@ -674,11 +713,30 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
     }
 
     private boolean checkPerm(CommandSender sender, CommandContext ctx, String perm) {
-        if (!sender.hasPermission(perm)) {
-            ctx.sendMessage(msg(L(sender, "cmd.no_permission")));
-            return false;
+        if (hasPermWithWildcard(sender, perm)) return true;
+        ctx.sendMessage(msg(L(sender, "cmd.no_permission")));
+        return false;
+    }
+
+    /**
+     * Check permission with wildcard support.
+     * Hytale's default permission system does NOT resolve wildcards,
+     * so we check: exact → parent.* → grandparent.* → *
+     */
+    static boolean hasPermWithWildcard(CommandSender sender, String perm) {
+        if (sender.hasPermission(perm)) return true;
+        String[] parts = perm.split("\\.");
+        for (int i = parts.length - 1; i >= 1; i--) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < i; j++) {
+                if (j > 0) sb.append('.');
+                sb.append(parts[j]);
+            }
+            sb.append(".*");
+            if (sender.hasPermission(sb.toString())) return true;
         }
-        return true;
+        if (sender.hasPermission("*")) return true;
+        return PermissionHelper.getInstance().hasPermission(sender.getUuid(), perm);
     }
 
     private static CompletableFuture<Void> done() {

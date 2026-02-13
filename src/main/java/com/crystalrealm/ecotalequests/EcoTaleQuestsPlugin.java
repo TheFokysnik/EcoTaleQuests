@@ -21,6 +21,7 @@ import com.crystalrealm.ecotalequests.storage.JsonQuestStorage;
 import com.crystalrealm.ecotalequests.storage.QuestStorage;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
+import com.crystalrealm.ecotalequests.util.PermissionHelper;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
 
 import com.hypixel.hytale.server.core.HytaleServer;
@@ -48,12 +49,12 @@ import java.util.concurrent.TimeUnit;
  *   <li>Anti-abuse: cooldown, лимиты отмен, дедупликация</li>
  * </ul>
  *
- * @version 1.3.1
+ * @version 1.3.2
  */
 public class EcoTaleQuestsPlugin extends JavaPlugin {
 
     private static final PluginLogger LOGGER = PluginLogger.forEnclosingClass();
-    private static final String VERSION = "1.3.1";
+    private static final String VERSION = "1.3.2";
 
     // ── Services ────────────────────────────────────────────────
     private ConfigManager configManager;
@@ -100,6 +101,9 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         // 1. Config
         configManager = new ConfigManager(getDataDirectory());
         configManager.loadOrCreate();
+
+        // 1b. Permission resolver (reads permissions.json for group-based checks)
+        PermissionHelper.getInstance().init(getDataDirectory());
         QuestsConfig config = configManager.getConfig();
 
         // 2. Lang

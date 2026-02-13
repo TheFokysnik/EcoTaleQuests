@@ -33,6 +33,9 @@ public abstract class AbstractCommand {
     /** Require a specific permission to execute this command. */
     public void requirePermission(String permission) {}
 
+    /** Assign command to permission groups by name (e.g. "Adventure", "Creative"). */
+    public void setPermissionGroups(String... groups) {}
+
     /** Add command aliases. */
     public void addAliases(String... aliases) {}
 

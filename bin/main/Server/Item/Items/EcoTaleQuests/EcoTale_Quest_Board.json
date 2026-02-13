@@ -1,0 +1,57 @@
+{
+  "TranslationProperties": {
+    "Name": "Quest Board"
+  },
+  "Icon": "Icons/ItemsGenerated/EcoTale_Quest_Board.png",
+  "ItemLevel": 10,
+  "MaxStack": 16,
+  "Categories": [
+    "Blocks.Rocks"
+  ],
+  "PlayerAnimationsId": "Block",
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "Group": "Wood",
+    "Flags": {},
+    "BlockParticleSetId": "Wood",
+    "CustomModel": "Items/ecotale_quest_board.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/ecotale_quest_board.png",
+        "Weight": 1
+      }
+    ],
+    "ParticleColor": "#5b3b27",
+    "BlockSoundSetId": "Wood",
+    "RotationYawPlacementOffset": "OneEighty",
+    "VariantRotation": "NESW",
+    "HitboxType": "EcoTaleQuestBoardGround",
+    "Interactions": {
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "OpenCustomUI",
+            "Page": {
+              "Id": "EcoTaleQuestBoard"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -9,
+      -22
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood"
+}

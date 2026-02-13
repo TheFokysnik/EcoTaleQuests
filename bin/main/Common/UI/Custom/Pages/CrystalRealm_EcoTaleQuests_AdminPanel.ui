@@ -1,0 +1,237 @@
+$C = "../Common.ui";
+
+@GoldTitle = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 18,
+  TextColor: #ffaa00,
+  RenderBold: true,
+  HorizontalAlignment: Center
+);
+
+@White = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #ffffff
+);
+
+@Gray = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 12,
+  TextColor: #aaaaaa
+);
+
+@Value = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #55ff55,
+  RenderBold: true
+);
+
+@SectionLabel = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 14,
+  TextColor: #ffaa00,
+  RenderBold: true
+);
+
+@Error = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #ff4444,
+  RenderBold: true
+);
+
+@Success = LabelStyle(
+  ...$C.@DefaultLabelStyle,
+  FontSize: 13,
+  TextColor: #55ff55,
+  RenderBold: true
+);
+
+$C.@PageOverlay {
+  LayoutMode: Middle;
+
+  $C.@DecoratedContainer {
+    Anchor: (Width: 720, Height: 520);
+
+    #Title {
+      Label #TitleLabel { Style: @GoldTitle; Text: "Admin Settings"; }
+    }
+
+    #Content {
+      LayoutMode: Top;
+      Padding: (Full: 8);
+
+      // ── Banners ────────────────────────────────────────────
+      Group #ErrorBanner { Anchor: (Height: 22); Visible: false;
+        Label #ErrorText { Style: @Error; Text: ""; }
+      }
+      Group #SuccessBanner { Anchor: (Height: 22); Visible: false;
+        Label #SuccessText { Style: @Success; Text: ""; }
+      }
+
+      Group {
+        LayoutMode: TopScrolling;
+        FlexWeight: 1;
+        ScrollbarStyle: $C.@DefaultScrollbarStyle;
+
+        // ── Section: General ─────────────────────────────────
+        Label #SecGeneral { Style: @SectionLabel; Anchor: (Height: 22); Text: "General"; }
+
+        // S1: Debug Mode (toggle)
+        Group #S1 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S1Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S1Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S1Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // S2: Language (toggle en/ru)
+        Group #S2 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S2Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S2Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S2Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // S3: Notify on Progress (toggle)
+        Group #S3 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S3Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S3Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S3Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // S4: Notify on Complete (toggle)
+        Group #S4 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S4Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S4Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S4Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // S5: Auto-Save Interval (increment)
+        Group #S5 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S5Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S5Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S5Down { Anchor: (Width: 30, Height: 24); Text: "-"; }
+          Group { Anchor: (Width: 4); }
+          $C.@SecondaryTextButton #S5Up { Anchor: (Width: 30, Height: 24); Text: "+"; }
+        }
+
+        // ── Section: Quest Limits ────────────────────────────
+        Group { Anchor: (Height: 6); }
+        Label #SecLimits { Style: @SectionLabel; Anchor: (Height: 22); Text: "Quest Limits"; }
+
+        // S6: Max Daily Active (increment)
+        Group #S6 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S6Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S6Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S6Down { Anchor: (Width: 30, Height: 24); Text: "-"; }
+          Group { Anchor: (Width: 4); }
+          $C.@SecondaryTextButton #S6Up { Anchor: (Width: 30, Height: 24); Text: "+"; }
+        }
+
+        // S7: Max Weekly Active (increment)
+        Group #S7 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S7Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S7Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S7Down { Anchor: (Width: 30, Height: 24); Text: "-"; }
+          Group { Anchor: (Width: 4); }
+          $C.@SecondaryTextButton #S7Up { Anchor: (Width: 30, Height: 24); Text: "+"; }
+        }
+
+        // S8: Daily Pool Size (increment)
+        Group #S8 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S8Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S8Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S8Down { Anchor: (Width: 30, Height: 24); Text: "-"; }
+          Group { Anchor: (Width: 4); }
+          $C.@SecondaryTextButton #S8Up { Anchor: (Width: 30, Height: 24); Text: "+"; }
+        }
+
+        // S9: Weekly Pool Size (increment)
+        Group #S9 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S9Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S9Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S9Down { Anchor: (Width: 30, Height: 24); Text: "-"; }
+          Group { Anchor: (Width: 4); }
+          $C.@SecondaryTextButton #S9Up { Anchor: (Width: 30, Height: 24); Text: "+"; }
+        }
+
+        // S10: Max Abandon / Day (increment)
+        Group #S10 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S10Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S10Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S10Down { Anchor: (Width: 30, Height: 24); Text: "-"; }
+          Group { Anchor: (Width: 4); }
+          $C.@SecondaryTextButton #S10Up { Anchor: (Width: 30, Height: 24); Text: "+"; }
+        }
+
+        // ── Section: Protection ──────────────────────────────
+        Group { Anchor: (Height: 6); }
+        Label #SecProtection { Style: @SectionLabel; Anchor: (Height: 22); Text: "Protection"; }
+
+        // S11: Require Online (toggle)
+        Group #S11 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S11Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S11Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S11Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // S12: Prevent Duplicate Types (toggle)
+        Group #S12 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S12Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S12Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S12Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // ── Section: Boards ──────────────────────────────────
+        Group { Anchor: (Height: 6); }
+        Label #SecBoards { Style: @SectionLabel; Anchor: (Height: 22); Text: "Boards"; }
+
+        // S13: Quest Access Mode (cycle: both / board_only / gui_only)
+        Group #S13 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S13Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S13Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S13Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // S14: Boards Enabled (toggle)
+        Group #S14 { LayoutMode: Left; Anchor: (Height: 28); Padding: (Left: 4, Right: 4);
+          Label #S14Label { Style: @White; Anchor: (Width: 240); Text: ""; }
+          Label #S14Value { Style: @Value; Anchor: (Width: 80); Text: ""; }
+          $C.@SecondaryTextButton #S14Toggle { Anchor: (Width: 180, Height: 24); Text: ""; }
+        }
+
+        // ── Section: Actions ─────────────────────────────────
+        Group { Anchor: (Height: 8); }
+        Label #SecActions { Style: @SectionLabel; Anchor: (Height: 22); Text: "Actions"; }
+
+        Group {
+          LayoutMode: Left;
+          Anchor: (Height: 34);
+          Padding: (Left: 4);
+
+          $C.@SecondaryTextButton #AB1 { Anchor: (Width: 220, Height: 28); Text: "Reload Config"; }
+          Group { Anchor: (Width: 6); }
+          $C.@SecondaryTextButton #AB2 { Anchor: (Width: 220, Height: 28); Text: "Refresh Pools"; }
+          Group { Anchor: (Width: 6); }
+          $C.@SecondaryTextButton #AB3 { Anchor: (Width: 220, Height: 28); Text: "Save Data"; }
+        }
+
+        // ── Stats ────────────────────────────────────────────
+        Group { Anchor: (Height: 6); }
+        Label #SecStats { Style: @SectionLabel; Anchor: (Height: 22); Text: "Stats"; }
+        Group { LayoutMode: Left; Anchor: (Height: 20); Padding: (Left: 4);
+          Label #StatDailyLabel { Style: @Gray; Anchor: (Width: 240); Text: ""; }
+          Label #StatDailyValue { Style: @Value; Text: ""; }
+        }
+        Group { LayoutMode: Left; Anchor: (Height: 20); Padding: (Left: 4);
+          Label #StatWeeklyLabel { Style: @Gray; Anchor: (Width: 240); Text: ""; }
+          Label #StatWeeklyValue { Style: @Value; Text: ""; }
+        }
+        Group { LayoutMode: Left; Anchor: (Height: 20); Padding: (Left: 4);
+          Label #StatVersionLabel { Style: @Gray; Anchor: (Width: 240); Text: ""; }
+          Label #StatVersionValue { Style: @Value; Text: ""; }
+        }
+      }
+    }
+  }
+}

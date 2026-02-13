@@ -1,0 +1,122 @@
+{
+  "General": {
+    "DebugMode": false,
+    "Language": "ru",
+    "MessagePrefix": "<dark_gray>[<gold>⚔<dark_gray>]",
+    "NotifyOnProgress": true,
+    "NotifyOnComplete": true,
+    "AutoSaveIntervalMinutes": 5
+  },
+  "QuestLimits": {
+    "MaxDailyActive": 4,
+    "MaxWeeklyActive": 2,
+    "DailyPoolSize": 10,
+    "WeeklyPoolSize": 5,
+    "MaxAbandonPerDay": 3,
+    "DailyResetTime": "00:00",
+    "WeeklyResetDay": "MONDAY"
+  },
+  "Generation": {
+    "KillMobs": {
+      "any_mob": { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 50, "WeeklyMax": 150, "MinLevel": 0 },
+      "zombie": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 30, "WeeklyMax": 80, "MinLevel": 0 },
+      "skeleton": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 25, "WeeklyMax": 70, "MinLevel": 0 },
+      "spider": { "DailyMin": 5, "DailyMax": 12, "WeeklyMin": 20, "WeeklyMax": 60, "MinLevel": 3 },
+      "trork": { "DailyMin": 3, "DailyMax": 10, "WeeklyMin": 15, "WeeklyMax": 50, "MinLevel": 5 },
+      "kweebec": { "DailyMin": 4, "DailyMax": 12, "WeeklyMin": 20, "WeeklyMax": 60, "MinLevel": 3 },
+      "scarrak": { "DailyMin": 3, "DailyMax": 8, "WeeklyMin": 12, "WeeklyMax": 40, "MinLevel": 8 },
+      "feran": { "DailyMin": 3, "DailyMax": 10, "WeeklyMin": 15, "WeeklyMax": 50, "MinLevel": 5 },
+      "outlander": { "DailyMin": 3, "DailyMax": 8, "WeeklyMin": 10, "WeeklyMax": 40, "MinLevel": 10 },
+      "raptor": { "DailyMin": 2, "DailyMax": 6, "WeeklyMin": 8, "WeeklyMax": 30, "MinLevel": 15 },
+      "magma_golem": { "DailyMin": 1, "DailyMax": 4, "WeeklyMin": 5, "WeeklyMax": 20, "MinLevel": 20 }
+    },
+    "MineOres": {
+      "any_ore": { "DailyMin": 15, "DailyMax": 50, "WeeklyMin": 80, "WeeklyMax": 250, "MinLevel": 0 },
+      "copper": { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 50, "WeeklyMax": 150, "MinLevel": 0 },
+      "iron": { "DailyMin": 8, "DailyMax": 25, "WeeklyMin": 40, "WeeklyMax": 120, "MinLevel": 5 },
+      "silver": { "DailyMin": 6, "DailyMax": 20, "WeeklyMin": 30, "WeeklyMax": 100, "MinLevel": 8 },
+      "gold": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 25, "WeeklyMax": 80, "MinLevel": 10 },
+      "cobalt": { "DailyMin": 3, "DailyMax": 10, "WeeklyMin": 15, "WeeklyMax": 50, "MinLevel": 20 },
+      "emerald": { "DailyMin": 2, "DailyMax": 8, "WeeklyMin": 10, "WeeklyMax": 40, "MinLevel": 25 },
+      "mythril": { "DailyMin": 2, "DailyMax": 6, "WeeklyMin": 10, "WeeklyMax": 30, "MinLevel": 30 }
+    },
+    "ChopWood": {
+      "any_wood": { "DailyMin": 20, "DailyMax": 60, "WeeklyMin": 100, "WeeklyMax": 300, "MinLevel": 0 },
+      "oak": { "DailyMin": 15, "DailyMax": 40, "WeeklyMin": 80, "WeeklyMax": 200, "MinLevel": 0 },
+      "birch": { "DailyMin": 15, "DailyMax": 40, "WeeklyMin": 80, "WeeklyMax": 200, "MinLevel": 0 },
+      "pine": { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 60, "WeeklyMax": 150, "MinLevel": 3 },
+      "willow": { "DailyMin": 8, "DailyMax": 25, "WeeklyMin": 50, "WeeklyMax": 120, "MinLevel": 5 },
+      "redwood": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 30, "WeeklyMax": 80, "MinLevel": 10 },
+      "jungle": { "DailyMin": 4, "DailyMax": 12, "WeeklyMin": 25, "WeeklyMax": 70, "MinLevel": 12 }
+    },
+    "HarvestCrops": {
+      "any_crop": { "DailyMin": 15, "DailyMax": 40, "WeeklyMin": 80, "WeeklyMax": 200, "MinLevel": 0 },
+      "wheat": { "DailyMin": 10, "DailyMax": 30, "WeeklyMin": 60, "WeeklyMax": 150, "MinLevel": 0 },
+      "potato": { "DailyMin": 10, "DailyMax": 25, "WeeklyMin": 50, "WeeklyMax": 120, "MinLevel": 0 },
+      "carrot": { "DailyMin": 8, "DailyMax": 20, "WeeklyMin": 40, "WeeklyMax": 100, "MinLevel": 3 },
+      "berry": { "DailyMin": 8, "DailyMax": 20, "WeeklyMin": 40, "WeeklyMax": 100, "MinLevel": 3 },
+      "tomato": { "DailyMin": 6, "DailyMax": 18, "WeeklyMin": 35, "WeeklyMax": 90, "MinLevel": 5 },
+      "onion": { "DailyMin": 6, "DailyMax": 18, "WeeklyMin": 35, "WeeklyMax": 90, "MinLevel": 5 },
+      "pumpkin": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 25, "WeeklyMax": 70, "MinLevel": 5 },
+      "corn": { "DailyMin": 5, "DailyMax": 15, "WeeklyMin": 20, "WeeklyMax": 60, "MinLevel": 5 },
+      "melon": { "DailyMin": 4, "DailyMax": 12, "WeeklyMin": 20, "WeeklyMax": 50, "MinLevel": 8 }
+    },
+    "EarnCoins": { "DailyMin": 100, "DailyMax": 500, "WeeklyMin": 500, "WeeklyMax": 2500, "MinLevel": 0 },
+    "GainXP": { "DailyMin": 50, "DailyMax": 200, "WeeklyMin": 200, "WeeklyMax": 1000, "MinLevel": 0 }
+  },
+  "Rewards": {
+    "BaseDailyCoins": 50.0,
+    "BaseWeeklyCoins": 200.0,
+    "BaseDailyXP": 25,
+    "BaseWeeklyXP": 100,
+    "LevelScalingFactor": 0.02,
+    "MaxLevelMultiplier": 3.0,
+    "DifficultyMultipliers": {
+      "kill_mob": 1.0,
+      "mine_ore": 0.8,
+      "chop_wood": 0.7,
+      "harvest_crop": 0.6,
+      "earn_coins": 1.2,
+      "gain_xp": 1.1
+    }
+  },
+  "VipTiers": {
+    "Tiers": [
+      { "Permission": "ecotalequests.multiplier.mvp_plus", "Multiplier": 2.0, "DisplayName": "MVP+" },
+      { "Permission": "ecotalequests.multiplier.mvp", "Multiplier": 1.5, "DisplayName": "MVP" },
+      { "Permission": "ecotalequests.multiplier.vip", "Multiplier": 1.25, "DisplayName": "VIP" }
+    ]
+  },
+  "Protection": {
+    "RequireOnline": true,
+    "MinPlaytimeMinutes": 5,
+    "QuestAcceptCooldownMs": 1000,
+    "PreventDuplicateTypes": true,
+    "AllowedWorlds": []
+  },
+  "Ranks": {
+    "Enabled": true,
+    "PenalizeOnFail": true,
+    "DefaultFailPenalty": 15,
+    "BaseRankPoints": 10,
+    "RankThresholds": {
+      "E": 0,
+      "D": 100,
+      "C": 300,
+      "B": 700,
+      "A": 1500,
+      "S": 3000
+    }
+  },
+  "Boards": {
+    "Enabled": true,
+    "QuestAccessMode": "both"
+  },
+  "Timers": {
+    "DefaultDurationMinutes": 0,
+    "RelogGracePeriodMs": 60000,
+    "TimerCheckIntervalSeconds": 10,
+    "NotifyTimerWarnings": true,
+    "WarningMinutes": [10, 5, 1]
+  }
+}
