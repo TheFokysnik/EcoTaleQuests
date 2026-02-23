@@ -1,6 +1,7 @@
 package com.crystalrealm.ecotalequests.listeners;
 
 import com.crystalrealm.ecotalequests.model.QuestType;
+import com.crystalrealm.ecotalequests.provider.leveling.LevelBridge;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
@@ -30,6 +31,7 @@ public class MobDeathQuestSystem extends DeathSystems.OnDeathSystem {
     private final QuestTracker questTracker;
     private final ComponentType<EntityStore, NPCEntity> npcType;
     private final ComponentType<EntityStore, Player> playerType;
+    private LevelBridge levelBridge;
 
     // Cached reflection methods (resolved once)
     private volatile Method getComponentMethod;
@@ -39,6 +41,11 @@ public class MobDeathQuestSystem extends DeathSystems.OnDeathSystem {
         this.questTracker = questTracker;
         this.npcType = NPCEntity.getComponentType();
         this.playerType = Player.getComponentType();
+    }
+
+    /** Injects the level bridge after provider activation. */
+    public void setLevelBridge(@Nonnull LevelBridge levelBridge) {
+        this.levelBridge = levelBridge;
     }
 
     @Override
@@ -187,6 +194,11 @@ public class MobDeathQuestSystem extends DeathSystems.OnDeathSystem {
             return;
         }
 
+        // Cache ECS context for MMOSkillTree and similar providers
+        if (levelBridge != null) {
+            levelBridge.onPlayerJoin(playerUuid, store, attackerRef);
+        }
+
         // 6. Track the kill
         int playerLevel = resolvePlayerLevel(playerUuid);
         LOGGER.info("Mob kill tracked: player={}, npcTypeId={}, role={}, level={}",
@@ -272,23 +284,7 @@ public class MobDeathQuestSystem extends DeathSystems.OnDeathSystem {
         return "unknown";
     }
 
-    private static int resolvePlayerLevel(UUID playerUuid) {
-        try {
-            Class<?> rpgClass = Class.forName("org.zuxaw.plugin.api.RPGLevelingAPI");
-            Object api = null;
-            for (String name : new String[]{"get", "getInstance", "getAPI"}) {
-                try {
-                    Method m = rpgClass.getMethod(name);
-                    api = m.invoke(null);
-                    if (api != null) break;
-                } catch (NoSuchMethodException ignored) {}
-            }
-            if (api != null) {
-                Method getLevel = api.getClass().getMethod("getPlayerLevel", UUID.class);
-                Object level = getLevel.invoke(api, playerUuid);
-                if (level instanceof Number n) return n.intValue();
-            }
-        } catch (Exception ignored) {}
-        return 1;
+    private int resolvePlayerLevel(UUID playerUuid) {
+        return levelBridge != null ? levelBridge.getPlayerLevel(playerUuid) : 1;
     }
 }

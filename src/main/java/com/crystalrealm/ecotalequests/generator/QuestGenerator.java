@@ -94,8 +94,72 @@ public class QuestGenerator {
             }
         }
 
-        LOGGER.info("Generated {} {} quests for level {}", pool.size(), period, playerLevel);
+        // Добавляем кастомные квесты (боссы, Rank S и т.д.)
+        List<Quest> custom = buildCustomQuests(period);
+        pool.addAll(custom);
+
+        LOGGER.info("Generated {} {} quests ({} custom) for level {}",
+                pool.size(), period, custom.size(), playerLevel);
         return pool;
+    }
+
+    /**
+     * Создаёт квесты из раздела CustomQuests в конфиге для заданного периода.
+     * Используется для ручных квестов (Rank S, боссы и т.д.).
+     */
+    @Nonnull
+    public List<Quest> buildCustomQuests(QuestPeriod period) {
+        List<Quest> result = new ArrayList<>();
+        List<QuestsConfig.CustomQuestEntry> entries = config.getCustomQuests();
+        if (entries == null || entries.isEmpty()) return result;
+
+        for (QuestsConfig.CustomQuestEntry entry : entries) {
+            // Фильтруем по периоду
+            QuestPeriod entryPeriod = "weekly".equalsIgnoreCase(entry.getPeriod())
+                    ? QuestPeriod.WEEKLY : QuestPeriod.DAILY;
+            if (entryPeriod != period) continue;
+
+            QuestType type = QuestType.fromId(entry.getType());
+            if (type == null) {
+                LOGGER.warn("Custom quest '{}': unknown type '{}'", entry.getId(), entry.getType());
+                continue;
+            }
+
+            // Skip disabled quest types
+            if (config.getGeneration().isQuestTypeDisabled(type.getId())) continue;
+
+            UUID questId = UUID.nameUUIDFromBytes(("custom:" + entry.getId()).getBytes());
+            QuestObjective objective = new QuestObjective(type, entry.getTarget(), entry.getAmount());
+            QuestReward reward = new QuestReward(entry.getCoins(), entry.getXp());
+
+            QuestRank requiredRank = QuestRank.fromId(entry.getRank());
+            QuestAccessType accessType = parseAccessType(entry.getAccessType());
+
+            long now = System.currentTimeMillis();
+            long expiresAt = calculateExpiration(period, now);
+
+            String name = "custom_" + entry.getId();
+            String description = entry.getId();
+
+            Quest quest = new Quest(questId, name, description, entryPeriod, objective, reward,
+                    entry.getMinLevel(), accessType, entry.getMaxSlots(),
+                    entry.getDurationMinutes(), requiredRank,
+                    entry.getRankPoints(), now, expiresAt);
+
+            result.add(quest);
+        }
+
+        LOGGER.info("Built {} custom {} quests", result.size(), period);
+        return result;
+    }
+
+    private static QuestAccessType parseAccessType(String s) {
+        if (s == null) return QuestAccessType.INDIVIDUAL;
+        return switch (s.toLowerCase()) {
+            case "global_unique" -> QuestAccessType.GLOBAL_UNIQUE;
+            case "limited_slots" -> QuestAccessType.LIMITED_SLOTS;
+            default -> QuestAccessType.INDIVIDUAL;
+        };
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -152,6 +216,17 @@ public class QuestGenerator {
         if (xpTpl != null && playerLevel >= xpTpl.getMinLevel()) {
             candidates.add(new QuestCandidate(QuestType.GAIN_XP, null, xpTpl));
         }
+
+        // Kill Bosses (integration with other mods)
+        for (Map.Entry<String, QuestsConfig.QuestTemplate> entry : gen.getKillBosses().entrySet()) {
+            QuestsConfig.QuestTemplate tpl = entry.getValue();
+            if (playerLevel >= tpl.getMinLevel()) {
+                candidates.add(new QuestCandidate(QuestType.KILL_BOSS, entry.getKey(), tpl));
+            }
+        }
+
+        // Filter out disabled quest types
+        candidates.removeIf(c -> gen.isQuestTypeDisabled(c.type().getId()));
 
         return candidates;
     }
@@ -355,6 +430,7 @@ public class QuestGenerator {
             case HARVEST_CROP -> "Harvest " + amount + " " + targetDisplay;
             case EARN_COINS -> "Earn " + amount + " coins";
             case GAIN_XP -> "Gain " + amount + " XP";
+            case KILL_BOSS -> "Defeat " + targetDisplay;
         };
     }
 
@@ -383,6 +459,7 @@ public class QuestGenerator {
             case HARVEST_CROP -> 1.0;
             case EARN_COINS -> 10.0;
             case GAIN_XP -> 100.0;
+            case KILL_BOSS -> 0.5;  // bosses are harder per-kill
         };
         return amount / divisor;
     }

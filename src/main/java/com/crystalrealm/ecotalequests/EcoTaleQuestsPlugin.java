@@ -20,6 +20,12 @@ import com.crystalrealm.ecotalequests.service.TimerService;
 import com.crystalrealm.ecotalequests.storage.JsonQuestStorage;
 import com.crystalrealm.ecotalequests.storage.QuestStorage;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
+import com.crystalrealm.ecotalequests.provider.economy.EconomyBridge;
+import com.crystalrealm.ecotalequests.provider.economy.GenericEconomyProvider;
+import com.crystalrealm.ecotalequests.provider.leveling.GenericLevelProvider;
+import com.crystalrealm.ecotalequests.provider.leveling.LevelBridge;
+import com.crystalrealm.ecotalequests.provider.leveling.MMOSkillTreeProvider;
+import com.crystalrealm.ecotalequests.provider.leveling.RPGLevelingProvider;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.PermissionHelper;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
@@ -27,8 +33,6 @@ import com.crystalrealm.ecotalequests.util.PluginLogger;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-
-import org.zuxaw.plugin.api.RPGLevelingAPI;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,12 +53,12 @@ import java.util.concurrent.TimeUnit;
  *   <li>Anti-abuse: cooldown, лимиты отмен, дедупликация</li>
  * </ul>
  *
- * @version 1.3.2
+ * @version 1.4.0
  */
 public class EcoTaleQuestsPlugin extends JavaPlugin {
 
     private static final PluginLogger LOGGER = PluginLogger.forEnclosingClass();
-    private static final String VERSION = "1.3.2";
+    private static final String VERSION = "1.4.0";
 
     // ── Services ────────────────────────────────────────────────
     private ConfigManager configManager;
@@ -76,8 +80,9 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
     private CoinQuestListener coinQuestListener;
     private QuestBoardInteractionListener boardInteractionListener;
 
-    // ── RPG Integration ─────────────────────────────────────────
-    private RPGLevelingAPI rpgApi;
+    // ── Provider Bridges ────────────────────────────────────────
+    private EconomyBridge economyBridge;
+    private LevelBridge levelBridge;
 
     // ── Scheduled tasks ─────────────────────────────────────────
     private ScheduledFuture<?> autoSaveTask;
@@ -117,7 +122,7 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         // 4. Generator
         questGenerator = new QuestGenerator(config);
 
-        // 5. Reward calculator
+        // 5. Reward calculator (EconomyBridge injected in start())
         rewardCalculator = new QuestRewardCalculator(config);
 
         // 6. Anti-abuse
@@ -146,6 +151,7 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
         LOGGER.info("Registered /quests command.");
 
         // 9. Register ECS systems (MUST be in setup(), before world starts ticking)
+        // LevelBridge injected in start() after providers are activated
         mobDeathQuestSystem = new MobDeathQuestSystem(questTracker);
         getEntityStoreRegistry().registerSystem(mobDeathQuestSystem);
         LOGGER.info("MobDeathQuestSystem registered (native ECS death tracking).");
@@ -161,20 +167,65 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
     @Override
     protected void start() {
         LOGGER.info("EcoTaleQuests starting...");
+        QuestsConfig config = configManager.getConfig();
 
-        // ── RPG Leveling detection ──
-        rpgApi = detectRPGLeveling();
+        // ── Economy Bridge ──
+        economyBridge = new EconomyBridge();
+        var genericEco = config.getGenericEconomy();
+        if (genericEco.isConfigured()) {
+            economyBridge.registerProvider("generic", new GenericEconomyProvider(
+                    genericEco.getClassName(), genericEco.getInstanceMethod(),
+                    genericEco.getDepositMethod(), genericEco.getBalanceMethod(),
+                    genericEco.isDepositHasReason()));
+        }
+        economyBridge.activate(config.getGeneral().getEconomyProvider());
+        LOGGER.info("Economy provider: {}", economyBridge.getProviderName());
 
-        // ── Register RPG Leveling listener (XP quests) ──
+        // ── Level Bridge ──
+        levelBridge = new LevelBridge();
+        levelBridge.registerProvider("mmoskilltree", new MMOSkillTreeProvider(
+                config.getMMOSkillTree().getDefaultSkillType()));
+        var genericLvl = config.getGenericLeveling();
+        if (genericLvl.isConfigured()) {
+            levelBridge.registerProvider("generic", new GenericLevelProvider(
+                    genericLvl.getClassName(), genericLvl.getInstanceMethod(),
+                    genericLvl.getGetLevelMethod(), genericLvl.getGrantXPMethod()));
+        }
+        levelBridge.activate(config.getGeneral().getLevelProvider());
+        LOGGER.info("Level provider: {}", levelBridge.getProviderName());
+
+        // ── Inject bridges into components ──
+        rewardCalculator.setEconomyBridge(economyBridge);
+        rewardCalculator.setLevelBridge(levelBridge);
+        blockQuestListener.setLevelBridge(levelBridge);
+        mobDeathQuestSystem.setLevelBridge(levelBridge);
+
+        // ── Register RPG Leveling listener (XP quests via event subscription) ──
         mobKillListener = new MobKillQuestListener(questTracker);
-        mobKillListener.register(rpgApi);
+        Object rawRpgApi = null;
+        for (var entry : java.util.List.of("rpgleveling")) {
+            if (levelBridge.isAvailable()) {
+                // Try to get raw API for event subscription
+                try {
+                    var providers = LevelBridge.class.getDeclaredField("providers");
+                    providers.setAccessible(true);
+                    @SuppressWarnings("unchecked")
+                    var map = (java.util.Map<String, ?>) providers.get(levelBridge);
+                    var rpgProvider = map.get("rpgleveling");
+                    if (rpgProvider instanceof RPGLevelingProvider rp) {
+                        rawRpgApi = rp.getRawApi();
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        mobKillListener.registerWithRawApi(rawRpgApi);
 
         // ── Register coin listener ──
-        coinQuestListener = new CoinQuestListener(questTracker);
+        coinQuestListener = new CoinQuestListener(questTracker, economyBridge, levelBridge);
         coinQuestListener.register();
 
         // ── Generate initial quest pools ──
-        int avgLevel = rpgApi != null ? 5 : 1; // стартовый уровень
+        int avgLevel = levelBridge.isAvailable() ? 5 : 1;
         questTracker.refreshPools(avgLevel);
 
         // ── Restore quest timers from persistent assignments ──
@@ -223,13 +274,15 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
 
         LOGGER.info("═══════════════════════════════════════");
         LOGGER.info("  EcoTaleQuests v{} — STARTED", VERSION);
+        LOGGER.info("  Economy:           {} ({})", config.getGeneral().getEconomyProvider(), economyBridge.getProviderName());
+        LOGGER.info("  Leveling:          {} ({})", config.getGeneral().getLevelProvider(), levelBridge.getProviderName());
         LOGGER.info("  Mob kill tracking: ACTIVE (native ECS DeathSystem)");
         LOGGER.info("  XP tracking:       {}", mobKillListener.isRegistered() ? "ACTIVE" : "DISABLED");
         LOGGER.info("  Block tracking:    ACTIVE");
         LOGGER.info("  Coin tracking:     {}", coinQuestListener.isRegistered() ? "ACTIVE" : "DISABLED");
         LOGGER.info("  Daily pool:        {} quests", storage.loadQuestPool(QuestPeriod.DAILY).size());
         LOGGER.info("  Weekly pool:       {} quests", storage.loadQuestPool(QuestPeriod.WEEKLY).size());
-        LOGGER.info("  Ranks:             {}", cfg.getRanks().isEnabled() ? "ENABLED" : "DISABLED");
+        LOGGER.info("  Ranks:             {}", config.getRanks().isEnabled() ? "ENABLED" : "DISABLED");
         LOGGER.info("  Boards:            {} placed", boardManager.getAllBoards().size());
         LOGGER.info("  Timer tick:        every {}s", timerInterval);
         LOGGER.info("═══════════════════════════════════════");
@@ -257,43 +310,11 @@ public class EcoTaleQuestsPlugin extends JavaPlugin {
     }
 
     // ═════════════════════════════════════════════════════════════
-    //  RPG LEVELING DETECTION
-    // ═════════════════════════════════════════════════════════════
-
-    @Nullable
-    private RPGLevelingAPI detectRPGLeveling() {
-        try {
-            Class<?> clazz = Class.forName("org.zuxaw.plugin.api.RPGLevelingAPI");
-            // Try get() first (beta-5+ API), then getInstance() as fallback
-            Object instance = null;
-            for (String methodName : new String[]{"get", "getInstance", "getAPI"}) {
-                try {
-                    java.lang.reflect.Method m = clazz.getMethod(methodName);
-                    instance = m.invoke(null);
-                    if (instance != null) {
-                        LOGGER.info("RPG Leveling API found via {}()", methodName);
-                        break;
-                    }
-                } catch (NoSuchMethodException ignored) {}
-            }
-            if (instance instanceof RPGLevelingAPI api) {
-                LOGGER.info("RPG Leveling API detected and connected.");
-                return api;
-            }
-            if (instance != null) {
-                LOGGER.warn("RPG Leveling API instance found but type mismatch: {}", instance.getClass().getName());
-            }
-        } catch (ClassNotFoundException e) {
-            LOGGER.info("RPG Leveling not found — mob kill and XP quests will be limited.");
-        } catch (Exception e) {
-            LOGGER.warn("Failed to connect to RPG Leveling API: {}", e.getMessage());
-        }
-        return null;
-    }
-
-    // ═════════════════════════════════════════════════════════════
     //  GETTERS
     // ═════════════════════════════════════════════════════════════
+
+    @Nonnull public EconomyBridge getEconomyBridge() { return economyBridge; }
+    @Nonnull public LevelBridge getLevelBridge() { return levelBridge; }
 
     @Nonnull public ConfigManager getConfigManager() { return configManager; }
     @Nonnull public LangManager getLangManager() { return langManager; }

@@ -12,6 +12,7 @@
   "quest.desc.harvest_crop": "Harvest: {target} ×{amount}",
   "quest.desc.earn_coins": "Earn {amount} currency",
   "quest.desc.gain_xp": "Gain {amount} XP",
+  "quest.desc.kill_boss": "Defeat: {target} ×{amount}",
 
   "quest.type.kill_mob": "Mobs",
   "quest.type.mine_ore": "Ore",
@@ -19,6 +20,7 @@
   "quest.type.harvest_crop": "Crops",
   "quest.type.earn_coins": "Currency",
   "quest.type.gain_xp": "XP",
+  "quest.type.kill_boss": "Boss",
 
   "quest.period.daily": "Daily",
   "quest.period.weekly": "Weekly",
@@ -62,6 +64,10 @@
   "target.onion": "Onion",
   "target.melon": "Melon",
   "target.any_crop": "Any crop",
+
+  "target.dragon": "Dragon",
+  "target.golem_king": "Golem King",
+  "target.wither_shade": "Wither Shade",
 
   "cmd.no_permission": "<red>You don't have permission for this action.",
 
@@ -108,16 +114,20 @@
   "cmd.info.footer": "<gold>================================",
 
   "cmd.stats.header": "<gold>======= <yellow>[Q] Quest Statistics <gold>=======",
+  "cmd.stats.rank": "<gray>Rank: <{color}>{rank} <dark_gray>(<white>{points} pts<dark_gray>)",
   "cmd.stats.active": "<gray>Active: <white>{count}",
   "cmd.stats.completed": "<gray>Total completed: <green>{count}",
+  "cmd.stats.failed": "<gray>Failed: <red>{count}",
+  "cmd.stats.breakdown_header": "<yellow>  Breakdown by rank:",
+  "cmd.stats.breakdown_entry": "<gray>    <{color}>{rank}<gray>: <white>{count}",
   "cmd.stats.footer": "<gold>================================",
 
   "cmd.reload.success": "<green>[+] Configuration reloaded.",
   "cmd.reload.fail": "<red>[!] Failed to reload configuration.",
 
-  "cmd.lang.usage": "<yellow>Usage: <white>/quests lang<code> <gray>where code = en, ru, pt_br, fr, de, es",
+  "cmd.lang.usage": "<yellow>Usage: <white>/quests lang<code> <gray>where code = en, ru, pt_br, fr, de, es, cs, hu",
   "cmd.lang.changed": "<green>[+] Language changed.",
-  "cmd.lang.invalid": "<red>Invalid language. Available: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
+  "cmd.lang.invalid": "<red>Invalid language. Available: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es<red>, <yellow>cs<red>, <yellow>hu",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Help <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Active quests",
@@ -129,7 +139,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Open quest panel",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Admin settings <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Reload config <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests lang<code> <gray>-- Change language (en/ru/pt_br/fr/de/es)",
+  "cmd.help.lang": "<yellow>/quests lang<code> <gray>-- Change language (en/ru/pt_br/fr/de/es/cs/hu)",
   "cmd.help.help": "<yellow>/quests help <gray>-- This help",
   "cmd.help.footer": "<gold>================================",
 
@@ -149,6 +159,11 @@
   "gui.admin.notify_progress": "Notify on Progress",
   "gui.admin.notify_complete": "Notify on Complete",
   "gui.admin.autosave_interval": "Autosave (min)",
+  "gui.admin.currency_symbol": "Currency Symbol",
+  "gui.admin.round_currency": "Round Currency",
+  "gui.admin.apply": "Apply",
+  "gui.admin.symbol_applied": "Currency symbol updated.",
+  "gui.admin.symbol_empty": "Symbol cannot be empty.",
   "gui.admin.max_daily_active": "Max Daily Active",
   "gui.admin.max_weekly_active": "Max Weekly Active",
   "gui.admin.daily_pool_size": "Daily Pool Size",
@@ -174,6 +189,45 @@
   "gui.admin.stat_weekly_pool": "Weekly Pool",
   "gui.admin.stat_version": "Version",
 
+  "gui.admin.sec_editor": "Quest Editor",
+  "gui.admin.editor_hint": "Create custom quests (bosses, Rank S, etc.)",
+  "gui.admin.ed_type": "Type",
+  "gui.admin.ed_target": "Target",
+  "gui.admin.ed_amount": "Amount",
+  "gui.admin.ed_period": "Period",
+  "gui.admin.ed_rank": "Required Rank",
+  "gui.admin.ed_coins": "Coins Reward",
+  "gui.admin.ed_xp": "XP Reward",
+  "gui.admin.ed_rank_points": "Rank Points",
+  "gui.admin.ed_duration": "Duration (min)",
+  "gui.admin.ed_access": "Access Type",
+  "gui.admin.ed_max_slots": "Max Slots",
+  "gui.admin.ed_min_level": "Min Level",
+  "gui.admin.ed_next_type": "Next Type",
+  "gui.admin.ed_next_target": "Next Target",
+  "gui.admin.ed_next_rank": "Next Rank",
+  "gui.admin.ed_next": "Next",
+  "gui.admin.btn_create": "Create Quest",
+  "gui.admin.btn_clear": "Clear",
+  "gui.admin.btn_delete": "Delete Last",
+  "gui.admin.quest_created": "Custom quest created!",
+  "gui.admin.quest_deleted": "Last custom quest deleted!",
+  "gui.admin.no_custom_quests": "No custom quests to delete",
+  "gui.admin.stat_custom": "Custom Quests",
+
+  "gui.rank_name.e": "E — Novice",
+  "gui.rank_name.d": "D — Apprentice",
+  "gui.rank_name.c": "C — Ranger",
+  "gui.rank_name.b": "B — Veteran",
+  "gui.rank_name.a": "A — Elite",
+  "gui.rank_name.s": "S — Legend",
+  "gui.rank_max": "MAX",
+  "gui.stats.active_daily": "Active: {current}/{max}",
+  "gui.stats.active_weekly": "Active: {current}/{max}",
+  "gui.access.global_unique": "Global",
+  "gui.timer_info": "Timer: {minutes} min",
+  "gui.rank_points_info": "+{points} RP",
+
   "cmd.rank.header": "<gold>======= <yellow>[Q] Adventurer Rank <gold>=======",
   "cmd.rank.current": "<gray>Rank: <{color}>{rank}",
   "cmd.rank.points": "<gray>Rank points: <white>{points}",
@@ -194,6 +248,9 @@
   "quest.failed_timer": "<red>[✕] Quest <gold>{name}</gold> <red>failed — time's up!",
   "quest.timer_warning": "<yellow>[⏰] Quest <gold>{name}</gold><yellow>: <white>{minutes} min remaining.",
 
+  "notify.quest_completed": "Quest completed!",
+  "notify.quest_failed": "Quest failed!",
+
   "cmd.help.rank": "<yellow>/quests rank <gray>-- Your adventurer rank",
 
   "gui.rank_display": "Rank: {rank} ({points} pts)",
@@ -203,5 +260,26 @@
   "gui.access.global": "(!) Global",
   "gui.access.limited": "({current}/{max}) slots",
 
-  "cmd.gui.board_only": "<red>Quests are only accessible via quest boards. Walk to a board and press [F]."
+  "cmd.gui.board_only": "<red>Quests are only accessible via quest boards. Walk to a board and press [F].",
+
+  "cmd.settarget.set": "<green>[+] Custom target set: <gold>{target}",
+  "cmd.settarget.cleared": "<yellow>Custom target cleared.",
+  "cmd.help.settarget": "<yellow>/quests settarget <name> <gray>-- Set custom target (admin)",
+
+  "gui.tab.top": "Top",
+  "gui.top.h_pos": "#",
+  "gui.top.h_name": "Player",
+  "gui.top.h_rank": "Rank",
+  "gui.top.h_pts": "Points",
+  "gui.top.h_done": "Done",
+  "gui.top.empty": "No leaderboard data yet.",
+
+  "gui.admin.sec_quest_types": "Quest Types",
+  "gui.admin.qt_kill_mob": "Kill Mobs",
+  "gui.admin.qt_mine_ore": "Mine Ores",
+  "gui.admin.qt_chop_wood": "Chop Wood",
+  "gui.admin.qt_harvest_crop": "Harvest Crops",
+  "gui.admin.qt_earn_coins": "Earn Coins",
+  "gui.admin.qt_gain_xp": "Gain XP",
+  "gui.admin.qt_kill_boss": "Kill Bosses"
 }

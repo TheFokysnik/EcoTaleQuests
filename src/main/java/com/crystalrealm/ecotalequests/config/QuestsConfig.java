@@ -17,6 +17,10 @@ public class QuestsConfig {
     private RanksSection Ranks = new RanksSection();
     private BoardsSection Boards = new BoardsSection();
     private TimerSection Timers = new TimerSection();
+    private GenericEconomySection GenericEconomy = new GenericEconomySection();
+    private GenericLevelingSection GenericLeveling = new GenericLevelingSection();
+    private MMOSkillTreeSection MMOSkillTree = new MMOSkillTreeSection();
+    private List<CustomQuestEntry> CustomQuests = new ArrayList<>();
 
     // ─── Getters ──────────────────────────────────────────────────
 
@@ -29,6 +33,10 @@ public class QuestsConfig {
     public RanksSection getRanks() { return Ranks; }
     public BoardsSection getBoards() { return Boards; }
     public TimerSection getTimers() { return Timers; }
+    public GenericEconomySection getGenericEconomy() { return GenericEconomy != null ? GenericEconomy : new GenericEconomySection(); }
+    public GenericLevelingSection getGenericLeveling() { return GenericLeveling != null ? GenericLeveling : new GenericLevelingSection(); }
+    public MMOSkillTreeSection getMMOSkillTree() { return MMOSkillTree != null ? MMOSkillTree : new MMOSkillTreeSection(); }
+    public List<CustomQuestEntry> getCustomQuests() { return CustomQuests; }
 
     // ═════════════════════════════════════════════════════════════
     //  Секции
@@ -42,6 +50,10 @@ public class QuestsConfig {
         private boolean NotifyOnProgress = true;
         private boolean NotifyOnComplete = true;
         private int AutoSaveIntervalMinutes = 5;
+        private String EconomyProvider = "ecotale";
+        private String LevelProvider = "rpgleveling";
+        private String CurrencySymbol = "$";
+        private boolean RoundCurrency = false;
 
         public boolean isDebugMode() { return DebugMode; }
         public void setDebugMode(boolean v) { this.DebugMode = v; }
@@ -54,6 +66,49 @@ public class QuestsConfig {
         public void setNotifyOnComplete(boolean v) { this.NotifyOnComplete = v; }
         public int getAutoSaveIntervalMinutes() { return AutoSaveIntervalMinutes; }
         public void setAutoSaveIntervalMinutes(int v) { this.AutoSaveIntervalMinutes = v; }
+        public String getEconomyProvider() { return EconomyProvider != null ? EconomyProvider : "ecotale"; }
+        public String getLevelProvider() { return LevelProvider != null ? LevelProvider : "rpgleveling"; }
+        public String getCurrencySymbol() { return CurrencySymbol != null ? CurrencySymbol : "$"; }
+        public void setCurrencySymbol(String v) { this.CurrencySymbol = v; }
+        public boolean isRoundCurrency() { return RoundCurrency; }
+        public void setRoundCurrency(boolean v) { this.RoundCurrency = v; }
+    }
+
+    /** Настройки reflection-адаптера для произвольного плагина экономики. */
+    public static class GenericEconomySection {
+        private String ClassName = "";
+        private String InstanceMethod = "";
+        private String DepositMethod = "deposit";
+        private String BalanceMethod = "getBalance";
+        private boolean DepositHasReason = false;
+
+        public String getClassName() { return ClassName != null ? ClassName : ""; }
+        public String getInstanceMethod() { return InstanceMethod != null ? InstanceMethod : ""; }
+        public String getDepositMethod() { return DepositMethod != null ? DepositMethod : "deposit"; }
+        public String getBalanceMethod() { return BalanceMethod != null ? BalanceMethod : "getBalance"; }
+        public boolean isDepositHasReason() { return DepositHasReason; }
+        public boolean isConfigured() { return !getClassName().isEmpty(); }
+    }
+
+    /** Настройки reflection-адаптера для произвольного плагина уровней/XP. */
+    public static class GenericLevelingSection {
+        private String ClassName = "";
+        private String InstanceMethod = "";
+        private String GetLevelMethod = "getPlayerLevel";
+        private String GrantXPMethod = "addXP";
+
+        public String getClassName() { return ClassName != null ? ClassName : ""; }
+        public String getInstanceMethod() { return InstanceMethod != null ? InstanceMethod : ""; }
+        public String getGetLevelMethod() { return GetLevelMethod != null ? GetLevelMethod : "getPlayerLevel"; }
+        public String getGrantXPMethod() { return GrantXPMethod != null ? GrantXPMethod : "addXP"; }
+        public boolean isConfigured() { return !getClassName().isEmpty(); }
+    }
+
+    /** Настройки MMOSkillTree. */
+    public static class MMOSkillTreeSection {
+        private String DefaultSkillType = "SWORDS";
+
+        public String getDefaultSkillType() { return DefaultSkillType != null ? DefaultSkillType : "SWORDS"; }
     }
 
     /** Лимиты квестов. */
@@ -86,15 +141,32 @@ public class QuestsConfig {
         private Map<String, QuestTemplate> MineOres = new LinkedHashMap<>();
         private Map<String, QuestTemplate> ChopWood = new LinkedHashMap<>();
         private Map<String, QuestTemplate> HarvestCrops = new LinkedHashMap<>();
+        private Map<String, QuestTemplate> KillBosses = new LinkedHashMap<>();
         private QuestTemplate EarnCoins = new QuestTemplate(100, 500, 50, 250, 0);
         private QuestTemplate GainXP = new QuestTemplate(50, 200, 100, 500, 0);
+        private List<String> DisabledQuestTypes = new ArrayList<>();
 
         public Map<String, QuestTemplate> getKillMobs() { return KillMobs; }
         public Map<String, QuestTemplate> getMineOres() { return MineOres; }
         public Map<String, QuestTemplate> getChopWood() { return ChopWood; }
         public Map<String, QuestTemplate> getHarvestCrops() { return HarvestCrops; }
+        public Map<String, QuestTemplate> getKillBosses() { return KillBosses; }
         public QuestTemplate getEarnCoins() { return EarnCoins; }
         public QuestTemplate getGainXP() { return GainXP; }
+        public List<String> getDisabledQuestTypes() { return DisabledQuestTypes != null ? DisabledQuestTypes : new ArrayList<>(); }
+        public void setDisabledQuestTypes(List<String> v) { this.DisabledQuestTypes = v; }
+        public boolean isQuestTypeDisabled(String typeId) {
+            return DisabledQuestTypes != null && DisabledQuestTypes.stream()
+                    .anyMatch(d -> d.equalsIgnoreCase(typeId));
+        }
+        public void toggleQuestType(String typeId) {
+            if (DisabledQuestTypes == null) DisabledQuestTypes = new ArrayList<>();
+            if (isQuestTypeDisabled(typeId)) {
+                DisabledQuestTypes.removeIf(d -> d.equalsIgnoreCase(typeId));
+            } else {
+                DisabledQuestTypes.add(typeId.toLowerCase());
+            }
+        }
     }
 
     /**
@@ -266,5 +338,54 @@ public class QuestsConfig {
         public int getTimerCheckIntervalSeconds() { return TimerCheckIntervalSeconds; }
         public boolean isNotifyTimerWarnings() { return NotifyTimerWarnings; }
         public List<Integer> getWarningMinutes() { return WarningMinutes; }
+    }
+
+    /**
+     * Запись кастомного квеста — задаётся администратором вручную.
+     * Эти квесты добавляются в пул генерации наравне с автогенерируемыми.
+     */
+    public static class CustomQuestEntry {
+        private String Id;
+        private String Type;       // kill_mob, mine_ore, chop_wood, harvest_crop, earn_coins, gain_xp, kill_boss
+        private String Target;     // e.g. "Dragon", "IronOre"
+        private int Amount = 1;
+        private String Period;     // "daily" or "weekly"
+        private String Rank;       // required rank: E, D, C, B, A, S
+        private double Coins = 100;
+        private int Xp = 50;
+        private int RankPoints = 10;
+        private int DurationMinutes = 0;
+        private String AccessType; // "individual", "global_unique", "limited_slots"
+        private int MaxSlots = 0;
+        private int MinLevel = 0;
+
+        public CustomQuestEntry() {}
+
+        public String getId() { return Id; }
+        public void setId(String id) { this.Id = id; }
+        public String getType() { return Type; }
+        public void setType(String type) { this.Type = type; }
+        public String getTarget() { return Target; }
+        public void setTarget(String target) { this.Target = target; }
+        public int getAmount() { return Amount; }
+        public void setAmount(int amount) { this.Amount = amount; }
+        public String getPeriod() { return Period; }
+        public void setPeriod(String period) { this.Period = period; }
+        public String getRank() { return Rank; }
+        public void setRank(String rank) { this.Rank = rank; }
+        public double getCoins() { return Coins; }
+        public void setCoins(double coins) { this.Coins = coins; }
+        public int getXp() { return Xp; }
+        public void setXp(int xp) { this.Xp = xp; }
+        public int getRankPoints() { return RankPoints; }
+        public void setRankPoints(int rp) { this.RankPoints = rp; }
+        public int getDurationMinutes() { return DurationMinutes; }
+        public void setDurationMinutes(int dm) { this.DurationMinutes = dm; }
+        public String getAccessType() { return AccessType; }
+        public void setAccessType(String at) { this.AccessType = at; }
+        public int getMaxSlots() { return MaxSlots; }
+        public void setMaxSlots(int ms) { this.MaxSlots = ms; }
+        public int getMinLevel() { return MinLevel; }
+        public void setMinLevel(int ml) { this.MinLevel = ml; }
     }
 }

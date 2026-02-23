@@ -115,9 +115,9 @@
   "cmd.reload.success": "<green>[+] Configuración recargada.",
   "cmd.reload.fail": "<red>[!] Error al recargar la configuración.",
 
-  "cmd.lang.usage": "<yellow>Uso: <white>/quests lang<código> <gray>donde código = en, ru, pt_br, fr, de, es",
+  "cmd.lang.usage": "<yellow>Uso: <white>/quests lang<código> <gray>donde código = en, ru, pt_br, fr, de, es, cs, hu",
   "cmd.lang.changed": "<green>[+] Idioma cambiado.",
-  "cmd.lang.invalid": "<red>Idioma inválido. Disponibles: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
+  "cmd.lang.invalid": "<red>Idioma inválido. Disponibles: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es<red>, <yellow>cs<red>, <yellow>hu",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Ayuda <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Misiones activas",
@@ -129,7 +129,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Panel de misiones",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Configuración <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Recargar config <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests lang<código> <gray>-- Cambiar idioma (en/ru/pt_br/fr/de/es)",
+  "cmd.help.lang": "<yellow>/quests lang<código> <gray>-- Cambiar idioma (en/ru/pt_br/fr/de/es/cs/hu)",
   "cmd.help.help": "<yellow>/quests help <gray>-- Esta ayuda",
   "cmd.help.footer": "<gold>================================",
 
@@ -194,6 +194,9 @@
   "quest.failed_timer": "<red>[✕] Misión <gold>{name}</gold> <red>fallada — ¡se acabó el tiempo!",
   "quest.timer_warning": "<yellow>[⏰] Misión <gold>{name}</gold><yellow>: <white>{minutes} min restantes.",
 
+  "notify.quest_completed": "¡Misión completada!",
+  "notify.quest_failed": "¡Misión fallada!",
+
   "cmd.help.rank": "<yellow>/quests rank <gray>-- Tu rango de aventurero",
 
   "gui.rank_display": "Rango: {rank} ({points} pts)",
@@ -203,5 +206,26 @@
   "gui.access.global": "(!) Global",
   "gui.access.limited": "({current}/{max}) plazas",
 
-  "cmd.gui.board_only": "<red>Las misiones solo son accesibles mediante tableros de misiones. Ve a un tablero y presiona [F]."
+  "cmd.gui.board_only": "<red>Las misiones solo son accesibles mediante tableros de misiones. Ve a un tablero y presiona [F].",
+
+  "cmd.settarget.set": "<green>[+] Objetivo personalizado establecido: <gold>{target}",
+  "cmd.settarget.cleared": "<yellow>Objetivo personalizado borrado.",
+  "cmd.help.settarget": "<yellow>/quests settarget <nombre> <gray>-- Establecer objetivo personalizado (admin)",
+
+  "gui.tab.top": "Top",
+  "gui.top.h_pos": "#",
+  "gui.top.h_name": "Jugador",
+  "gui.top.h_rank": "Rango",
+  "gui.top.h_pts": "Puntos",
+  "gui.top.h_done": "Hechos",
+  "gui.top.empty": "Aun no hay datos de clasificacion.",
+
+  "gui.admin.sec_quest_types": "Tipos de mision",
+  "gui.admin.qt_kill_mob": "Matar mobs",
+  "gui.admin.qt_mine_ore": "Minar minerales",
+  "gui.admin.qt_chop_wood": "Cortar madera",
+  "gui.admin.qt_harvest_crop": "Cosechar cultivos",
+  "gui.admin.qt_earn_coins": "Ganar monedas",
+  "gui.admin.qt_gain_xp": "Ganar XP",
+  "gui.admin.qt_kill_boss": "Matar jefes"
 }

@@ -5,10 +5,11 @@
 Give players **daily** and **weekly** quests — kill mobs, mine ores, chop trees, harvest crops, earn currency, gain XP — with automatic generation from **46+ quest candidates**, wildcard targets, level-scaled rewards, a **native GUI panel**, an **admin settings panel**, **adventurer rank system**, **quest timers**, **physical quest boards**, fully localized quest names (6 languages), and real-time chat progress notifications.
 
 ![Hytale Server Mod](https://img.shields.io/badge/Hytale-Server%20Mod-0ea5e9?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.3.2-10b981?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.4.0-10b981?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17+-f97316?style=for-the-badge&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-a855f7?style=for-the-badge)
 ![Ecotale](https://img.shields.io/badge/Ecotale-1.0.7-6366f1?style=for-the-badge)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/WWWb4tmX)
 
 [**Getting Started**](#-getting-started) · [**Features**](#-features) · [**Commands**](#-commands) · [**Configuration**](#-configuration) · [**Architecture**](#-architecture)
 

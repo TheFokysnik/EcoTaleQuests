@@ -99,6 +99,9 @@ public class QuestRankService {
 
         synchronized (data) {
             rankChanged = data.addPoints(points);
+            // Track per-rank completion
+            String questRankId = (required != null) ? required.name() : "E";
+            data.incrementCompletedForRank(questRankId);
             storage.saveRankData(data);
         }
 

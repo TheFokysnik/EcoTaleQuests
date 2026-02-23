@@ -31,6 +31,16 @@ public class Message {
         return new Message(text);
     }
 
+    /** Create a Message from a translation key. Real API: Message.translation(String). */
+    public static Message translation(String key) {
+        return new Message(key);
+    }
+
+    /** Apply a hex color to this message. Real API: Message.color(String). */
+    public Message color(String hexColor) {
+        return this;
+    }
+
     @Override
     public String toString() {
         return text;

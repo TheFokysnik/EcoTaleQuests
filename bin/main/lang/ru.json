@@ -12,6 +12,7 @@
   "quest.desc.harvest_crop": "Собрать: {target} ×{amount}",
   "quest.desc.earn_coins": "Заработать {amount} валюты",
   "quest.desc.gain_xp": "Получить {amount} опыта",
+  "quest.desc.kill_boss": "Победить: {target} ×{amount}",
 
   "quest.type.kill_mob": "Мобы",
   "quest.type.mine_ore": "Руда",
@@ -19,6 +20,7 @@
   "quest.type.harvest_crop": "Урожай",
   "quest.type.earn_coins": "Валюта",
   "quest.type.gain_xp": "Опыт",
+  "quest.type.kill_boss": "Босс",
 
   "quest.period.daily": "Ежедн.",
   "quest.period.weekly": "Недел.",
@@ -62,6 +64,10 @@
   "target.onion": "Лук",
   "target.melon": "Дыня",
   "target.any_crop": "Любой урожай",
+
+  "target.dragon": "Дракон",
+  "target.golem_king": "Король големов",
+  "target.wither_shade": "Тень увядания",
 
   "cmd.no_permission": "<red>У вас нет прав для этого действия.",
 
@@ -108,16 +114,20 @@
   "cmd.info.footer": "<gold>================================",
 
   "cmd.stats.header": "<gold>======= <yellow>[Q] Статистика квестов <gold>=======",
+  "cmd.stats.rank": "<gray>Ранг: <{color}>{rank} <dark_gray>(<white>{points} оч.<dark_gray>)",
   "cmd.stats.active": "<gray>Активных: <white>{count}",
   "cmd.stats.completed": "<gray>Выполнено всего: <green>{count}",
+  "cmd.stats.failed": "<gray>Провалено: <red>{count}",
+  "cmd.stats.breakdown_header": "<yellow>  Разбивка по рангам:",
+  "cmd.stats.breakdown_entry": "<gray>    <{color}>{rank}<gray>: <white>{count}",
   "cmd.stats.footer": "<gold>================================",
 
   "cmd.reload.success": "<green>[+] Конфигурация перезагружена.",
   "cmd.reload.fail": "<red>[!] Ошибка перезагрузки конфигурации.",
 
-  "cmd.lang.usage": "<yellow>Используйте: <white>/quests lang<код> <gray>где код = en, ru, pt_br, fr, de, es",
+  "cmd.lang.usage": "<yellow>Используйте: <white>/quests lang<код> <gray>где код = en, ru, pt_br, fr, de, es, cs, hu",
   "cmd.lang.changed": "<green>[+] Язык изменён.",
-  "cmd.lang.invalid": "<red>Неверный язык. Доступные: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
+  "cmd.lang.invalid": "<red>Неверный язык. Доступные: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es<red>, <yellow>cs<red>, <yellow>hu",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Помощь <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Активные квесты",
@@ -129,7 +139,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Панель квестов",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Настройки <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Перезагрузить конфиг <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests lang<код> <gray>-- Сменить язык (en/ru/pt_br/fr/de/es)",
+  "cmd.help.lang": "<yellow>/quests lang<код> <gray>-- Сменить язык (en/ru/pt_br/fr/de/es/cs/hu)",
   "cmd.help.help": "<yellow>/quests help <gray>-- Эта справка",
   "cmd.help.footer": "<gold>================================",
 
@@ -174,6 +184,45 @@
   "gui.admin.stat_weekly_pool": "Недел. пул",
   "gui.admin.stat_version": "Версия",
 
+  "gui.admin.sec_editor": "Редактор квестов",
+  "gui.admin.editor_hint": "Создание кастомных квестов (боссы, Rank S и т.д.)",
+  "gui.admin.ed_type": "Тип",
+  "gui.admin.ed_target": "Цель",
+  "gui.admin.ed_amount": "Количество",
+  "gui.admin.ed_period": "Период",
+  "gui.admin.ed_rank": "Требуемый ранг",
+  "gui.admin.ed_coins": "Награда (монеты)",
+  "gui.admin.ed_xp": "Награда (опыт)",
+  "gui.admin.ed_rank_points": "Очки ранга",
+  "gui.admin.ed_duration": "Длительность (мин)",
+  "gui.admin.ed_access": "Тип доступа",
+  "gui.admin.ed_max_slots": "Макс. слотов",
+  "gui.admin.ed_min_level": "Мин. уровень",
+  "gui.admin.ed_next_type": "Далее",
+  "gui.admin.ed_next_target": "Далее",
+  "gui.admin.ed_next_rank": "Далее",
+  "gui.admin.ed_next": "Далее",
+  "gui.admin.btn_create": "Создать квест",
+  "gui.admin.btn_clear": "Очистить",
+  "gui.admin.btn_delete": "Удалить последний",
+  "gui.admin.quest_created": "Кастомный квест создан!",
+  "gui.admin.quest_deleted": "Последний квест удален!",
+  "gui.admin.no_custom_quests": "Нет квестов для удаления",
+  "gui.admin.stat_custom": "Кастомные квесты",
+
+  "gui.rank_name.e": "E — Новичок",
+  "gui.rank_name.d": "D — Ученик",
+  "gui.rank_name.c": "C — Воин",
+  "gui.rank_name.b": "B — Ветеран",
+  "gui.rank_name.a": "A — Элита",
+  "gui.rank_name.s": "S — Легенда",
+  "gui.rank_max": "МАКС",
+  "gui.stats.active_daily": "Активных: {current}/{max}",
+  "gui.stats.active_weekly": "Активных: {current}/{max}",
+  "gui.access.global_unique": "Глобальный",
+  "gui.timer_info": "Таймер: {minutes} мин",
+  "gui.rank_points_info": "+{points} ОР",
+
   "cmd.rank.header": "<gold>======= <yellow>[Q] Ранг авантюриста <gold>=======",
   "cmd.rank.current": "<gray>Ранг: <{color}>{rank}",
   "cmd.rank.points": "<gray>Очки ранга: <white>{points}",
@@ -194,6 +243,9 @@
   "quest.failed_timer": "<red>[✕] Квест <gold>{name}</gold> <red>провален — время истекло!",
   "quest.timer_warning": "<yellow>[⏰] Квест <gold>{name}</gold><yellow>: осталось <white>{minutes} мин.",
 
+  "notify.quest_completed": "Квест выполнен!",
+  "notify.quest_failed": "Квест провален!",
+
   "cmd.help.rank": "<yellow>/quests rank <gray>-- Ваш ранг авантюриста",
 
   "gui.rank_display": "Ранг: {rank} ({points} оч.)",
@@ -203,5 +255,26 @@
   "gui.access.global": "(!) Глобальный",
   "gui.access.limited": "({current}/{max}) слотов",
 
-  "cmd.gui.board_only": "<red>Квесты доступны только через доски квестов. Подойдите к доске и нажмите [F]."
+  "cmd.gui.board_only": "<red>Квесты доступны только через доски квестов. Подойдите к доске и нажмите [F].",
+
+  "cmd.settarget.set": "<green>[+] Кастомная цель установлена: <gold>{target}",
+  "cmd.settarget.cleared": "<yellow>Кастомная цель очищена.",
+  "cmd.help.settarget": "<yellow>/quests settarget <имя> <gray>-- Задать кастомную цель (admin)",
+
+  "gui.tab.top": "Топ",
+  "gui.top.h_pos": "#",
+  "gui.top.h_name": "Игрок",
+  "gui.top.h_rank": "Ранг",
+  "gui.top.h_pts": "Очки",
+  "gui.top.h_done": "Сделано",
+  "gui.top.empty": "Данных для таблицы лидеров пока нет.",
+
+  "gui.admin.sec_quest_types": "Типы квестов",
+  "gui.admin.qt_kill_mob": "Убийство мобов",
+  "gui.admin.qt_mine_ore": "Добыча руды",
+  "gui.admin.qt_chop_wood": "Рубка дерева",
+  "gui.admin.qt_harvest_crop": "Сбор урожая",
+  "gui.admin.qt_earn_coins": "Заработок монет",
+  "gui.admin.qt_gain_xp": "Получение опыта",
+  "gui.admin.qt_kill_boss": "Убийство боссов"
 }

@@ -21,7 +21,10 @@ public enum QuestType {
     EARN_COINS("earn_coins", "coins"),
 
     /** Набрать определённое количество XP (требует RPG Leveling). */
-    GAIN_XP("gain_xp", "xp");
+    GAIN_XP("gain_xp", "xp"),
+
+    /** Убить определённого босса (интеграция с другими модами). */
+    KILL_BOSS("kill_boss", "boss");
 
     private final String id;
     private final String category;

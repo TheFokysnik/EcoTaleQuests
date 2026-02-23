@@ -5,7 +5,29 @@
     "MessagePrefix": "<dark_gray>[<gold>⚔<dark_gray>]",
     "NotifyOnProgress": true,
     "NotifyOnComplete": true,
-    "AutoSaveIntervalMinutes": 5
+    "AutoSaveIntervalMinutes": 5,
+    "_EconomyProviderOptions": "ecotale | economyapi | generic",
+    "EconomyProvider": "ecotale",
+    "_LevelProviderOptions": "rpgleveling | endlessleveling | mmoskilltree | generic",
+    "LevelProvider": "rpgleveling",
+    "CurrencySymbol": "$",
+    "RoundCurrency": false
+  },
+  "GenericEconomy": {
+    "ClassName": "",
+    "InstanceMethod": "",
+    "DepositMethod": "deposit",
+    "BalanceMethod": "getBalance",
+    "DepositHasReason": false
+  },
+  "GenericLeveling": {
+    "ClassName": "",
+    "InstanceMethod": "",
+    "GetLevelMethod": "getPlayerLevel",
+    "GrantXPMethod": "addXP"
+  },
+  "MMOSkillTree": {
+    "DefaultSkillType": "SWORDS"
   },
   "QuestLimits": {
     "MaxDailyActive": 4,
@@ -62,7 +84,13 @@
       "melon": { "DailyMin": 4, "DailyMax": 12, "WeeklyMin": 20, "WeeklyMax": 50, "MinLevel": 8 }
     },
     "EarnCoins": { "DailyMin": 100, "DailyMax": 500, "WeeklyMin": 500, "WeeklyMax": 2500, "MinLevel": 0 },
-    "GainXP": { "DailyMin": 50, "DailyMax": 200, "WeeklyMin": 200, "WeeklyMax": 1000, "MinLevel": 0 }
+    "GainXP": { "DailyMin": 50, "DailyMax": 200, "WeeklyMin": 200, "WeeklyMax": 1000, "MinLevel": 0 },
+    "KillBosses": {
+      "dragon": { "DailyMin": 1, "DailyMax": 2, "WeeklyMin": 3, "WeeklyMax": 5, "MinLevel": 25 },
+      "golem_king": { "DailyMin": 1, "DailyMax": 2, "WeeklyMin": 2, "WeeklyMax": 4, "MinLevel": 20 },
+      "wither_shade": { "DailyMin": 1, "DailyMax": 1, "WeeklyMin": 2, "WeeklyMax": 3, "MinLevel": 30 }
+    },
+    "DisabledQuestTypes": []
   },
   "Rewards": {
     "BaseDailyCoins": 50.0,
@@ -77,7 +105,8 @@
       "chop_wood": 0.7,
       "harvest_crop": 0.6,
       "earn_coins": 1.2,
-      "gain_xp": 1.1
+      "gain_xp": 1.1,
+      "kill_boss": 2.0
     }
   },
   "VipTiers": {
@@ -118,5 +147,37 @@
     "TimerCheckIntervalSeconds": 10,
     "NotifyTimerWarnings": true,
     "WarningMinutes": [10, 5, 1]
-  }
+  },
+  "CustomQuests": [
+    {
+      "Id": "boss_dragon_weekly",
+      "Type": "kill_boss",
+      "Target": "dragon",
+      "Amount": 3,
+      "Period": "weekly",
+      "Rank": "A",
+      "Coins": 500,
+      "Xp": 300,
+      "RankPoints": 50,
+      "DurationMinutes": 0,
+      "AccessType": "global_unique",
+      "MaxSlots": 1,
+      "MinLevel": 25
+    },
+    {
+      "Id": "boss_golem_daily",
+      "Type": "kill_boss",
+      "Target": "golem_king",
+      "Amount": 1,
+      "Period": "daily",
+      "Rank": "S",
+      "Coins": 300,
+      "Xp": 200,
+      "RankPoints": 30,
+      "DurationMinutes": 120,
+      "AccessType": "limited_slots",
+      "MaxSlots": 3,
+      "MinLevel": 20
+    }
+  ]
 }

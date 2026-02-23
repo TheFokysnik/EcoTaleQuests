@@ -301,6 +301,10 @@ public class QuestTracker {
         // Grant reward
         boolean rewarded = rewardCalculator.grantReward(playerUuid, quest, playerLevel, vipMult);
 
+        // Grant bonus XP
+        int finalXp = rewardCalculator.calculateBonusXP(quest, playerLevel, vipMult);
+        boolean xpGranted = rewardCalculator.grantBonusXP(playerUuid, quest, playerLevel, vipMult);
+
         // Always notify on completion, regardless of reward success
         double finalCoins = rewardCalculator.calculateFinalReward(quest, playerLevel, vipMult);
         String displayName = localizedQuestDesc(playerUuid, quest);
@@ -310,16 +314,28 @@ public class QuestTracker {
                     ? " <gray>(<yellow>" + vip.displayName() + " ×"
                       + String.format("%.2f", vipMult) + "</yellow>)</gray>"
                     : "";
+            String xpSuffix = xpGranted && finalXp > 0
+                    ? " <green>+" + finalXp + " XP</green>"
+                    : "";
             msg = langManager.getForPlayer(playerUuid, "quest.completed",
                     "name", displayName,
                     "reward", MessageUtil.formatCoins(finalCoins),
-                    "vip", vipSuffix);
+                    "vip", vipSuffix + xpSuffix);
         } else {
-            // Reward failed (economy unavailable) — still notify completion
             msg = langManager.getForPlayer(playerUuid, "quest.completed_no_reward",
                     "name", displayName);
         }
-        MessageUtil.sendMessage(playerUuid, msg);
+
+        // HUD notification для завершения
+        String category = quest.getObjective().getType().getCategory();
+        String hudTitle = langManager.getForPlayer(playerUuid, "notify.quest_completed");
+        String hudDesc = rewarded
+                ? displayName + " | +" + MessageUtil.formatCoins(finalCoins)
+                  + (xpGranted && finalXp > 0 ? " | +" + finalXp + " XP" : "")
+                : displayName;
+        String icon = MessageUtil.getQuestTypeIcon(category);
+        MessageUtil.sendQuestNotification(playerUuid, hudTitle, hudDesc,
+                "#55FF88", "#E8EDF2", icon, msg);
 
         invalidateCache(playerUuid);
     }
@@ -331,13 +347,22 @@ public class QuestTracker {
         double required = quest.getObjective().getRequiredAmount();
         double current = pqd.getCurrentProgress();
 
-        // Используем локализованное короткое имя (только цель)
         String shortName = localizedQuestShort(playerUuid, quest);
-        String msg = langManager.getForPlayer(playerUuid, "quest.action_progress",
+        String category = quest.getObjective().getType().getCategory();
+
+        // HUD: title = "Железо: 4/10", desc = "40%"
+        String title = shortName + ": " + (int) current + "/" + (int) required;
+        String desc = MessageUtil.formatProgress(current, required);
+        String icon = MessageUtil.getQuestTypeIcon(category);
+
+        // Chat fallback
+        String chatFallback = langManager.getForPlayer(playerUuid, "quest.action_progress",
                 "name", shortName,
                 "current", String.valueOf((int) current),
                 "required", String.valueOf((int) required));
-        MessageUtil.sendMessage(playerUuid, msg);
+
+        MessageUtil.sendQuestNotification(playerUuid, title, desc,
+                "#E8EDF2", "#8A95A5", icon, chatFallback);
     }
 
     private void notifyMilestone(UUID playerUuid, Quest quest, PlayerQuestData pqd) {
@@ -349,12 +374,22 @@ public class QuestTracker {
         if (isNotifiableMilestone(pct, (current - 1) / required)) {
             String bar = MessageUtil.progressBar(current, required, 10);
             String shortName = localizedQuestShort(playerUuid, quest);
-            String msg = langManager.getForPlayer(playerUuid, "quest.progress",
+            String category = quest.getObjective().getType().getCategory();
+
+            // HUD: title = "Железо: 5/10", desc = "50%"
+            String title = shortName + ": " + (int) current + "/" + (int) required;
+            String desc = MessageUtil.formatProgress(current, required);
+            String icon = MessageUtil.getQuestTypeIcon(category);
+
+            // Chat fallback с баром
+            String chatFallback = langManager.getForPlayer(playerUuid, "quest.progress",
                     "name", shortName,
                     "current", String.valueOf((int) current),
                     "required", String.valueOf((int) required),
                     "bar", bar);
-            MessageUtil.sendMessage(playerUuid, msg);
+
+            MessageUtil.sendQuestNotification(playerUuid, title, desc,
+                    "#F0C040", "#55FF88", icon, chatFallback);
         }
     }
 
@@ -448,7 +483,13 @@ public class QuestTracker {
         String questName = quest != null ? quest.getName() : questId.toString().substring(0, 8);
         String msg = langManager.getForPlayer(playerUuid, "quest.failed_timer",
                 "name", questName);
-        MessageUtil.sendMessage(playerUuid, msg);
+
+        // HUD notification для провала
+        String hudTitle = langManager.getForPlayer(playerUuid, "notify.quest_failed");
+        String category = quest != null ? quest.getObjective().getType().getCategory() : null;
+        String icon = MessageUtil.getQuestTypeIcon(category);
+        MessageUtil.sendQuestNotification(playerUuid, hudTitle, questName,
+                "#FF5555", "#E8EDF2", icon, msg);
 
         LOGGER.info("Quest {} FAILED (timer expired) for player {}", questId, playerUuid);
     }

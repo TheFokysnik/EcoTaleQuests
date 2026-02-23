@@ -1,6 +1,7 @@
 package com.crystalrealm.ecotalequests.listeners;
 
 import com.crystalrealm.ecotalequests.model.QuestType;
+import com.crystalrealm.ecotalequests.provider.leveling.LevelBridge;
 import com.crystalrealm.ecotalequests.tracker.QuestTracker;
 import com.crystalrealm.ecotalequests.util.MessageUtil;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
@@ -8,6 +9,7 @@ import com.crystalrealm.ecotalequests.util.PluginLogger;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.ComponentRegistryProxy;
+import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
@@ -31,9 +33,15 @@ public class BlockQuestListener {
     private static final PluginLogger LOGGER = PluginLogger.forEnclosingClass();
 
     private final QuestTracker questTracker;
+    private LevelBridge levelBridge;
 
     public BlockQuestListener(@Nonnull QuestTracker questTracker) {
         this.questTracker = questTracker;
+    }
+
+    /** Injects the level bridge after provider activation. */
+    public void setLevelBridge(@Nonnull LevelBridge levelBridge) {
+        this.levelBridge = levelBridge;
     }
 
     /**
@@ -79,9 +87,13 @@ public class BlockQuestListener {
                 if (blockId == null || blockId.isEmpty()) return;
 
                 // Кешируем PlayerRef для отправки сообщений
-                try {
-                    MessageUtil.cachePlayerRef(playerUuid, playerRef);
-                } catch (Exception ignored) {}
+                MessageUtil.cachePlayerRef(playerUuid, playerRef);
+
+                // Cache ECS context for MMOSkillTree and similar providers
+                if (levelBridge != null) {
+                    Ref<EntityStore> ref = chunk.getReferenceTo(index);
+                    if (ref != null) levelBridge.onPlayerJoin(playerUuid, store, ref);
+                }
 
                 String sanitized = sanitizeBlockId(blockId);
                 int playerLevel = resolvePlayerLevel(playerUuid);
@@ -129,9 +141,13 @@ public class BlockQuestListener {
                 String blockId = blockType.getId();
                 if (blockId == null || blockId.isEmpty()) return;
 
-                try {
-                    MessageUtil.cachePlayerRef(playerUuid, playerRef);
-                } catch (Exception ignored) {}
+                MessageUtil.cachePlayerRef(playerUuid, playerRef);
+
+                // Cache ECS context for providers
+                if (levelBridge != null) {
+                    Ref<EntityStore> ref = chunk.getReferenceTo(index);
+                    if (ref != null) levelBridge.onPlayerJoin(playerUuid, store, ref);
+                }
 
                 String sanitized = sanitizeBlockId(blockId);
                 int playerLevel = resolvePlayerLevel(playerUuid);
@@ -207,24 +223,7 @@ public class BlockQuestListener {
                  .trim();
     }
 
-    private static int resolvePlayerLevel(UUID playerUuid) {
-        // Через reflection пробуем получить уровень из RPG Leveling
-        try {
-            Class<?> rpgClass = Class.forName("org.zuxaw.plugin.api.RPGLevelingAPI");
-            Object api = null;
-            for (String methodName : new String[]{"get", "getInstance", "getAPI"}) {
-                try {
-                    java.lang.reflect.Method m = rpgClass.getMethod(methodName);
-                    api = m.invoke(null);
-                    if (api != null) break;
-                } catch (NoSuchMethodException ignored) {}
-            }
-            if (api != null) {
-                java.lang.reflect.Method getLevel = api.getClass().getMethod("getPlayerLevel", UUID.class);
-                Object level = getLevel.invoke(api, playerUuid);
-                if (level instanceof Number n) return n.intValue();
-            }
-        } catch (Exception ignored) {}
-        return 1;
+    private int resolvePlayerLevel(UUID playerUuid) {
+        return levelBridge != null ? levelBridge.getPlayerLevel(playerUuid) : 1;
     }
 }

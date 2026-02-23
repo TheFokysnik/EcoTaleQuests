@@ -5,6 +5,8 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
+import com.hypixel.hytale.server.core.io.PacketHandler;
+
 import java.util.UUID;
 
 /**
@@ -25,6 +27,9 @@ public class PlayerRef implements Component<EntityStore> {
 
     /** Get the entity reference for this player. */
     public Ref<EntityStore> getReference() { return null; }
+
+    /** Get the packet handler for sending HUD notifications. */
+    public PacketHandler getPacketHandler() { return null; }
 
     /** Send a message to this player. */
     public void sendMessage(Object message) {}

@@ -115,9 +115,9 @@
   "cmd.reload.success": "<green>[+] Konfiguration neu geladen.",
   "cmd.reload.fail": "<red>[!] Fehler beim Neuladen der Konfiguration.",
 
-  "cmd.lang.usage": "<yellow>Nutzung: <white>/quests lang<code> <gray>wobei code = en, ru, pt_br, fr, de, es",
+  "cmd.lang.usage": "<yellow>Nutzung: <white>/quests lang<code> <gray>wobei code = en, ru, pt_br, fr, de, es, cs, hu",
   "cmd.lang.changed": "<green>[+] Sprache geändert.",
-  "cmd.lang.invalid": "<red>Ungültige Sprache. Verfügbar: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
+  "cmd.lang.invalid": "<red>Ungültige Sprache. Verfügbar: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es<red>, <yellow>cs<red>, <yellow>hu",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Hilfe <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Aktive Quests",
@@ -129,7 +129,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Quest-Panel",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Einstellungen <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Config neu laden <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests lang<code> <gray>-- Sprache ändern (en/ru/pt_br/fr/de/es)",
+  "cmd.help.lang": "<yellow>/quests lang<code> <gray>-- Sprache ändern (en/ru/pt_br/fr/de/es/cs/hu)",
   "cmd.help.help": "<yellow>/quests help <gray>-- Diese Hilfe",
   "cmd.help.footer": "<gold>================================",
 
@@ -194,6 +194,9 @@
   "quest.failed_timer": "<red>[✕] Quest <gold>{name}</gold> <red>fehlgeschlagen — Zeit abgelaufen!",
   "quest.timer_warning": "<yellow>[⏰] Quest <gold>{name}</gold><yellow>: <white>{minutes} Min. verbleibend.",
 
+  "notify.quest_completed": "Quest abgeschlossen!",
+  "notify.quest_failed": "Quest fehlgeschlagen!",
+
   "cmd.help.rank": "<yellow>/quests rank <gray>-- Dein Abenteurer-Rang",
 
   "gui.rank_display": "Rang: {rank} ({points} Pkt.)",
@@ -203,5 +206,26 @@
   "gui.access.global": "(!) Global",
   "gui.access.limited": "({current}/{max}) Plätze",
 
-  "cmd.gui.board_only": "<red>Quests sind nur über Quest-Tafeln zugänglich. Gehe zu einer Tafel und drücke [F]."
+  "cmd.gui.board_only": "<red>Quests sind nur über Quest-Tafeln zugänglich. Gehe zu einer Tafel und drücke [F].",
+
+  "cmd.settarget.set": "<green>[+] Benutzerdefiniertes Ziel gesetzt: <gold>{target}",
+  "cmd.settarget.cleared": "<yellow>Benutzerdefiniertes Ziel geloescht.",
+  "cmd.help.settarget": "<yellow>/quests settarget <name> <gray>-- Benutzerdefiniertes Ziel setzen (admin)",
+
+  "gui.tab.top": "Top",
+  "gui.top.h_pos": "#",
+  "gui.top.h_name": "Spieler",
+  "gui.top.h_rank": "Rang",
+  "gui.top.h_pts": "Punkte",
+  "gui.top.h_done": "Erledigt",
+  "gui.top.empty": "Noch keine Bestenlisten-Daten.",
+
+  "gui.admin.sec_quest_types": "Quest-Typen",
+  "gui.admin.qt_kill_mob": "Mobs toeten",
+  "gui.admin.qt_mine_ore": "Erze abbauen",
+  "gui.admin.qt_chop_wood": "Holz faellen",
+  "gui.admin.qt_harvest_crop": "Ernte einfahren",
+  "gui.admin.qt_earn_coins": "Muenzen verdienen",
+  "gui.admin.qt_gain_xp": "XP sammeln",
+  "gui.admin.qt_kill_boss": "Bosse besiegen"
 }

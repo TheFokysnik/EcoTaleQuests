@@ -40,8 +40,8 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
     /** Keywords that are command/subcommand names (not real arguments). */
     private static final Set<String> COMMAND_KEYWORDS = Set.of(
             "quests", "active", "available", "accept", "abandon",
-            "info", "stats", "reload", "lang", "langen", "langru", "langpt", "langfr", "langde", "langes", "help", "gui", "admin",
-            "rank"
+            "info", "stats", "reload", "lang", "langen", "langru", "langpt", "langfr", "langde", "langes", "langcs", "help", "gui", "admin",
+            "rank", "settarget"
     );
 
     private static Message msg(String miniMessage) {
@@ -69,7 +69,9 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
         addSubCommand(new LangFrSubCommand());
         addSubCommand(new LangDeSubCommand());
         addSubCommand(new LangEsSubCommand());
+        addSubCommand(new LangCsSubCommand());
         addSubCommand(new RankSubCommand());
+        addSubCommand(new SetTargetSubCommand());
         addSubCommand(new HelpSubCommand());
     }
 
@@ -341,13 +343,35 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
 
             UUID uuid = sender.getUuid();
             QuestTracker tracker = plugin.getQuestTracker();
+            QuestRankService rankService = tracker.getRankService();
+            PlayerRankData rankData = rankService.getRankData(uuid);
+            QuestRank rank = rankData.getRank();
 
             int activeCount = tracker.getActiveQuests(uuid).size();
             int completedCount = tracker.getCompletedCount(uuid);
 
             context.sendMessage(msg(L(sender, "cmd.stats.header")));
+            context.sendMessage(msg(L(sender, "cmd.stats.rank",
+                    "rank", rank.name(), "color", rank.getColor(),
+                    "points", String.valueOf(rankData.getRankPoints()))));
             context.sendMessage(msg(L(sender, "cmd.stats.active", "count", String.valueOf(activeCount))));
             context.sendMessage(msg(L(sender, "cmd.stats.completed", "count", String.valueOf(completedCount))));
+            context.sendMessage(msg(L(sender, "cmd.stats.failed", "count", String.valueOf(rankData.getTotalFailed()))));
+
+            // Per-rank breakdown
+            java.util.Map<String, Integer> byRank = rankData.getCompletedByRank();
+            if (!byRank.isEmpty()) {
+                context.sendMessage(msg(L(sender, "cmd.stats.breakdown_header")));
+                for (QuestRank qr : QuestRank.values()) {
+                    int cnt = byRank.getOrDefault(qr.name(), 0);
+                    if (cnt > 0) {
+                        context.sendMessage(msg(L(sender, "cmd.stats.breakdown_entry",
+                                "rank", qr.name(), "color", qr.getColor(),
+                                "count", String.valueOf(cnt))));
+                    }
+                }
+            }
+
             context.sendMessage(msg(L(sender, "cmd.stats.footer")));
 
             return done();
@@ -455,6 +479,15 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
         @Override
         public CompletableFuture<Void> executeAsync(CommandContext context) {
             return switchLang(context, "es");
+        }
+    }
+
+    /** Shortcut: /quests langcs */
+    private class LangCsSubCommand extends AbstractAsyncCommand {
+        LangCsSubCommand() { super("langcs", "Switch to Czech"); }
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            return switchLang(context, "cs");
         }
     }
 
@@ -635,6 +668,29 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
 
     // ── /quests help ────────────────────────────────────────────
 
+    private class SetTargetSubCommand extends AbstractAsyncCommand {
+        SetTargetSubCommand() { super("settarget", "Set custom target name for quest editor"); }
+
+        @Override
+        public CompletableFuture<Void> executeAsync(CommandContext context) {
+            if (!context.isPlayer()) return done();
+            CommandSender sender = context.sender();
+            if (!checkPerm(sender, context, "ecotalequests.admin.reload")) return done();
+
+            String target = parseTrailingArg(context);
+            if (target == null || target.isEmpty()) {
+                AdminQuestsGui.clearCustomTarget(sender.getUuid());
+                context.sendMessage(msg(L(sender, "cmd.settarget.cleared")));
+            } else {
+                AdminQuestsGui.setCustomTarget(sender.getUuid(), target);
+                context.sendMessage(msg(L(sender, "cmd.settarget.set", "target", target)));
+            }
+            return done();
+        }
+    }
+
+    // ── /quests help ────────────────────────────────────────────
+
     private class HelpSubCommand extends AbstractAsyncCommand {
         HelpSubCommand() { super("help", "Show help"); }
 
@@ -655,6 +711,7 @@ public class QuestsCommandCollection extends AbstractCommandCollection {
             context.sendMessage(msg(L(sender, "cmd.help.admin_gui")));
             context.sendMessage(msg(L(sender, "cmd.help.reload")));
             context.sendMessage(msg(L(sender, "cmd.help.lang")));
+            context.sendMessage(msg(L(sender, "cmd.help.settarget")));
             context.sendMessage(msg(L(sender, "cmd.help.help")));
             context.sendMessage(msg(L(sender, "cmd.help.footer")));
             return done();

@@ -71,6 +71,10 @@ public interface QuestStorage {
     /** Сохраняет ранговые данные игрока. */
     void saveRankData(@Nonnull PlayerRankData data);
 
+    /** Возвращает все ранговые данные (для лидерборда). */
+    @Nonnull
+    java.util.Collection<PlayerRankData> getAllRankData();
+
     // ── Board Locations ─────────────────────────────────────────
 
     /** Загружает все доски квестов. */

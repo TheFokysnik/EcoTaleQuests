@@ -115,9 +115,9 @@
   "cmd.reload.success": "<green>[+] Configuration rechargée.",
   "cmd.reload.fail": "<red>[!] Échec du rechargement de la configuration.",
 
-  "cmd.lang.usage": "<yellow>Utilisation : <white>/quests lang<code> <gray>où code = en, ru, pt_br, fr, de, es",
+  "cmd.lang.usage": "<yellow>Utilisation : <white>/quests lang<code> <gray>où code = en, ru, pt_br, fr, de, es, cs, hu",
   "cmd.lang.changed": "<green>[+] Langue modifiée.",
-  "cmd.lang.invalid": "<red>Langue invalide. Disponibles : <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
+  "cmd.lang.invalid": "<red>Langue invalide. Disponibles : <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es<red>, <yellow>cs<red>, <yellow>hu",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Aide <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Quêtes actives",
@@ -129,7 +129,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Panneau des quêtes",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Paramètres <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Recharger config <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests lang<code> <gray>-- Changer la langue (en/ru/pt_br/fr/de/es)",
+  "cmd.help.lang": "<yellow>/quests lang<code> <gray>-- Changer la langue (en/ru/pt_br/fr/de/es/cs/hu)",
   "cmd.help.help": "<yellow>/quests help <gray>-- Cette aide",
   "cmd.help.footer": "<gold>================================",
 
@@ -194,6 +194,9 @@
   "quest.failed_timer": "<red>[✕] Quête <gold>{name}</gold> <red>échouée — temps écoulé !",
   "quest.timer_warning": "<yellow>[⏰] Quête <gold>{name}</gold><yellow> : <white>{minutes} min restantes.",
 
+  "notify.quest_completed": "Quête terminée !",
+  "notify.quest_failed": "Quête échouée !",
+
   "cmd.help.rank": "<yellow>/quests rank <gray>-- Votre rang d'aventurier",
 
   "gui.rank_display": "Rang : {rank} ({points} pts)",
@@ -203,5 +206,26 @@
   "gui.access.global": "(!) Global",
   "gui.access.limited": "({current}/{max}) places",
 
-  "cmd.gui.board_only": "<red>Les quêtes ne sont accessibles que via les tableaux de quêtes. Allez à un tableau et appuyez sur [F]."
+  "cmd.gui.board_only": "<red>Les quêtes ne sont accessibles que via les tableaux de quêtes. Allez à un tableau et appuyez sur [F].",
+
+  "cmd.settarget.set": "<green>[+] Cible personnalisee definie: <gold>{target}",
+  "cmd.settarget.cleared": "<yellow>Cible personnalisee effacee.",
+  "cmd.help.settarget": "<yellow>/quests settarget <nom> <gray>-- Definir cible personnalisee (admin)",
+
+  "gui.tab.top": "Top",
+  "gui.top.h_pos": "#",
+  "gui.top.h_name": "Joueur",
+  "gui.top.h_rank": "Rang",
+  "gui.top.h_pts": "Points",
+  "gui.top.h_done": "Faits",
+  "gui.top.empty": "Aucune donnee de classement pour le moment.",
+
+  "gui.admin.sec_quest_types": "Types de quetes",
+  "gui.admin.qt_kill_mob": "Tuer des mobs",
+  "gui.admin.qt_mine_ore": "Miner du minerai",
+  "gui.admin.qt_chop_wood": "Couper du bois",
+  "gui.admin.qt_harvest_crop": "Recolter",
+  "gui.admin.qt_earn_coins": "Gagner des pieces",
+  "gui.admin.qt_gain_xp": "Gagner de l'XP",
+  "gui.admin.qt_kill_boss": "Tuer des boss"
 }

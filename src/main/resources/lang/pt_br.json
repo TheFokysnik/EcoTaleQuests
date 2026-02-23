@@ -115,9 +115,9 @@
   "cmd.reload.success": "<green>[+] Configuração recarregada.",
   "cmd.reload.fail": "<red>[!] Falha ao recarregar configuração.",
 
-  "cmd.lang.usage": "<yellow>Uso: <white>/quests lang<código> <gray>onde código = en, ru, pt_br, fr, de, es",
+  "cmd.lang.usage": "<yellow>Uso: <white>/quests lang<código> <gray>onde código = en, ru, pt_br, fr, de, es, cs, hu",
   "cmd.lang.changed": "<green>[+] Idioma alterado.",
-  "cmd.lang.invalid": "<red>Idioma inválido. Disponíveis: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es",
+  "cmd.lang.invalid": "<red>Idioma inválido. Disponíveis: <yellow>en<red>, <yellow>ru<red>, <yellow>pt_br<red>, <yellow>fr<red>, <yellow>de<red>, <yellow>es<red>, <yellow>cs<red>, <yellow>hu",
 
   "cmd.help.header": "<gold>======= <yellow>[Q] EcoTaleQuests -- Ajuda <gold>=======",
   "cmd.help.active": "<yellow>/quests <gray>-- Missões ativas",
@@ -129,7 +129,7 @@
   "cmd.help.gui": "<yellow>/quests gui <gray>-- Painel de missões",
   "cmd.help.admin_gui": "<yellow>/quests admin <gray>-- Configurações <dark_gray>(admin)",
   "cmd.help.reload": "<yellow>/quests reload <gray>-- Recarregar config <dark_gray>(admin)",
-  "cmd.help.lang": "<yellow>/quests lang<código> <gray>-- Mudar idioma (en/ru/pt_br/fr/de/es)",
+  "cmd.help.lang": "<yellow>/quests lang<código> <gray>-- Mudar idioma (en/ru/pt_br/fr/de/es/cs/hu)",
   "cmd.help.help": "<yellow>/quests help <gray>-- Esta ajuda",
   "cmd.help.footer": "<gold>================================",
 
@@ -149,6 +149,11 @@
   "gui.admin.notify_progress": "Notificar Progresso",
   "gui.admin.notify_complete": "Notificar Conclusão",
   "gui.admin.autosave_interval": "Autosave (min)",
+  "gui.admin.currency_symbol": "Currency Symbol",
+  "gui.admin.round_currency": "Round Currency",
+  "gui.admin.apply": "Apply",
+  "gui.admin.symbol_applied": "Currency symbol updated.",
+  "gui.admin.symbol_empty": "Symbol cannot be empty.",
   "gui.admin.max_daily_active": "Máx Diárias Ativas",
   "gui.admin.max_weekly_active": "Máx Semanais Ativas",
   "gui.admin.daily_pool_size": "Tamanho Pool Diário",
@@ -194,6 +199,9 @@
   "quest.failed_timer": "<red>[✕] Missão <gold>{name}</gold> <red>falhou — tempo esgotado!",
   "quest.timer_warning": "<yellow>[⏰] Missão <gold>{name}</gold><yellow>: <white>{minutes} min restantes.",
 
+  "notify.quest_completed": "Missão concluída!",
+  "notify.quest_failed": "Missão falhou!",
+
   "cmd.help.rank": "<yellow>/quests rank <gray>-- Seu rank de aventureiro",
 
   "gui.rank_display": "Rank: {rank} ({points} pts)",
@@ -203,5 +211,26 @@
   "gui.access.global": "(!) Global",
   "gui.access.limited": "({current}/{max}) vagas",
 
-  "cmd.gui.board_only": "<red>Missões só acessíveis pelo quadro de missões. Vá até um quadro e pressione [F]."
+  "cmd.gui.board_only": "<red>Missões só acessíveis pelo quadro de missões. Vá até um quadro e pressione [F].",
+
+  "cmd.settarget.set": "<green>[+] Alvo personalizado definido: <gold>{target}",
+  "cmd.settarget.cleared": "<yellow>Alvo personalizado removido.",
+  "cmd.help.settarget": "<yellow>/quests settarget <nome> <gray>-- Definir alvo personalizado (admin)",
+
+  "gui.tab.top": "Top",
+  "gui.top.h_pos": "#",
+  "gui.top.h_name": "Jogador",
+  "gui.top.h_rank": "Rank",
+  "gui.top.h_pts": "Pontos",
+  "gui.top.h_done": "Feitos",
+  "gui.top.empty": "Sem dados de ranking ainda.",
+
+  "gui.admin.sec_quest_types": "Tipos de missao",
+  "gui.admin.qt_kill_mob": "Matar mobs",
+  "gui.admin.qt_mine_ore": "Minerar minerios",
+  "gui.admin.qt_chop_wood": "Cortar madeira",
+  "gui.admin.qt_harvest_crop": "Colher plantacoes",
+  "gui.admin.qt_earn_coins": "Ganhar moedas",
+  "gui.admin.qt_gain_xp": "Ganhar XP",
+  "gui.admin.qt_kill_boss": "Matar chefes"
 }

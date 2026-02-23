@@ -14,7 +14,9 @@
     "DrawType": "Model",
     "Opacity": "Transparent",
     "Group": "Wood",
-    "Flags": {},
+    "Flags": {
+      "IsUsable": true
+    },
     "BlockParticleSetId": "Wood",
     "CustomModel": "Items/ecotale_quest_board.blockymodel",
     "CustomModelTexture": [
@@ -32,10 +34,7 @@
       "Use": {
         "Interactions": [
           {
-            "Type": "OpenCustomUI",
-            "Page": {
-              "Id": "EcoTaleQuestBoard"
-            }
+            "Type": "Simple"
           }
         ]
       }

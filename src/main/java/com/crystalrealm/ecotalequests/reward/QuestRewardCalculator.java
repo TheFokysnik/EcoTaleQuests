@@ -2,6 +2,8 @@ package com.crystalrealm.ecotalequests.reward;
 
 import com.crystalrealm.ecotalequests.config.QuestsConfig;
 import com.crystalrealm.ecotalequests.model.Quest;
+import com.crystalrealm.ecotalequests.provider.economy.EconomyBridge;
+import com.crystalrealm.ecotalequests.provider.leveling.LevelBridge;
 import com.crystalrealm.ecotalequests.util.PluginLogger;
 
 import javax.annotation.Nonnull;
@@ -13,7 +15,7 @@ import java.util.UUID;
 /**
  * Рассчитывает и выдаёт награды за выполненные квесты.
  *
- * <p>Использует Ecotale API ({@code com.ecotale.api.EcotaleAPI}) для депозита валюты.
+ * <p>Использует EconomyBridge для депозита валюты и LevelBridge для начисления XP.
  * Награда скейлится по уровню игрока и VIP-тиру.</p>
  */
 public class QuestRewardCalculator {
@@ -21,14 +23,21 @@ public class QuestRewardCalculator {
     private static final PluginLogger LOGGER = PluginLogger.forEnclosingClass();
 
     private final QuestsConfig config;
-
-    // Кешированные ссылки на методы EcotaleAPI (reflection)
-    private static volatile boolean apiResolved = false;
-    private static Method depositMethod;
-    private static Method isAvailableMethod;
+    private EconomyBridge economyBridge;
+    private LevelBridge levelBridge;
 
     public QuestRewardCalculator(@Nonnull QuestsConfig config) {
         this.config = config;
+    }
+
+    /** Injects the economy bridge after provider activation. */
+    public void setEconomyBridge(@Nonnull EconomyBridge economyBridge) {
+        this.economyBridge = economyBridge;
+    }
+
+    /** Injects the level bridge after provider activation. */
+    public void setLevelBridge(@Nonnull LevelBridge levelBridge) {
+        this.levelBridge = levelBridge;
     }
 
     /**
@@ -59,10 +68,8 @@ public class QuestRewardCalculator {
                                @Nonnull Quest quest,
                                int playerLevel,
                                double vipMultiplier) {
-        resolveApi();
-
-        if (!isEcotaleAvailable()) {
-            LOGGER.error("Ecotale API is not available — cannot grant quest reward!");
+        if (economyBridge == null || !economyBridge.isAvailable()) {
+            LOGGER.error("Economy provider is not available — cannot grant quest reward!");
             return false;
         }
 
@@ -73,22 +80,16 @@ public class QuestRewardCalculator {
             return false;
         }
 
-        try {
-            String reason = "Quest: " + quest.getName() + " (" + quest.getShortId() + ")";
-            Object result = depositMethod.invoke(null, playerUuid, finalAmount, reason);
-            if (result instanceof Boolean success && success) {
-                LOGGER.info("Granted {} currency to {} for quest {} ({}) [VIP ×{}]",
-                        finalAmount, playerUuid, quest.getShortId(), quest.getName(), vipMultiplier);
-                return true;
-            } else {
-                LOGGER.error("Deposit returned false for quest reward (player={}, amount={})",
-                        playerUuid, finalAmount);
-                return false;
-            }
-        } catch (Exception e) {
-            LOGGER.error("Error granting quest reward to " + playerUuid, e);
-            return false;
+        String reason = "Quest: " + quest.getName() + " (" + quest.getShortId() + ")";
+        boolean success = economyBridge.deposit(playerUuid, finalAmount, reason);
+        if (success) {
+            LOGGER.info("Granted {} currency to {} for quest {} ({}) [VIP ×{}]",
+                    finalAmount, playerUuid, quest.getShortId(), quest.getName(), vipMultiplier);
+        } else {
+            LOGGER.error("Deposit failed for quest reward (player={}, amount={})",
+                    playerUuid, finalAmount);
         }
+        return success;
     }
 
     /**
@@ -105,6 +106,42 @@ public class QuestRewardCalculator {
      */
     public int calculateBonusXP(@Nonnull Quest quest, int playerLevel) {
         return calculateBonusXP(quest, playerLevel, 1.0);
+    }
+
+    /**
+     * Выдаёт бонусный XP игроку через LevelBridge.
+     *
+     * @param playerUuid    UUID игрока
+     * @param quest         завершённый квест
+     * @param playerLevel   уровень игрока
+     * @param vipMultiplier VIP-множитель (1.0 для обычных игроков)
+     * @return true если XP успешно начислен, false если нет провайдера или XP = 0
+     */
+    public boolean grantBonusXP(@Nonnull UUID playerUuid,
+                                @Nonnull Quest quest,
+                                int playerLevel,
+                                double vipMultiplier) {
+        int finalXp = calculateBonusXP(quest, playerLevel, vipMultiplier);
+        if (finalXp <= 0) {
+            return false;
+        }
+
+        if (levelBridge == null || !levelBridge.isAvailable()) {
+            LOGGER.debug("Level provider not available — skipping XP grant ({} XP for {})",
+                    finalXp, playerUuid);
+            return false;
+        }
+
+        String reason = "Quest: " + quest.getName() + " (" + quest.getShortId() + ")";
+        boolean success = levelBridge.grantXP(playerUuid, finalXp, reason);
+        if (success) {
+            LOGGER.info("Granted {} XP to {} for quest {} ({}) [VIP ×{}]",
+                    finalXp, playerUuid, quest.getShortId(), quest.getName(), vipMultiplier);
+        } else {
+            LOGGER.error("XP grant failed for quest reward (player={}, xp={})",
+                    playerUuid, finalXp);
+        }
+        return success;
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -213,32 +250,4 @@ public class QuestRewardCalculator {
         return false;
     }
 
-    // ═════════════════════════════════════════════════════════════
-    //  ECOTALE API REFLECTION (com.ecotale.api.EcotaleAPI)
-    // ═════════════════════════════════════════════════════════════
-
-    private static void resolveApi() {
-        if (apiResolved) return;
-        try {
-            Class<?> clazz = Class.forName("com.ecotale.api.EcotaleAPI");
-            depositMethod = clazz.getMethod("deposit", UUID.class, double.class, String.class);
-            isAvailableMethod = clazz.getMethod("isAvailable");
-            LOGGER.info("Ecotale API (com.ecotale.api) resolved for quest rewards.");
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("Ecotale API class not found — quest rewards will not work!");
-        } catch (Exception e) {
-            LOGGER.error("Failed to resolve Ecotale API methods: {}", e.getMessage());
-        }
-        apiResolved = true;
-    }
-
-    private static boolean isEcotaleAvailable() {
-        if (isAvailableMethod == null) return false;
-        try {
-            Object result = isAvailableMethod.invoke(null);
-            return result instanceof Boolean b && b;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }

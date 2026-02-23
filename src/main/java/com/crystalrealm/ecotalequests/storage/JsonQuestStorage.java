@@ -233,6 +233,12 @@ public class JsonQuestStorage implements QuestStorage {
         rankDataCache.put(data.getPlayerUuid(), data);
     }
 
+    @Override
+    @Nonnull
+    public java.util.Collection<PlayerRankData> getAllRankData() {
+        return java.util.Collections.unmodifiableCollection(rankDataCache.values());
+    }
+
     // ═════════════════════════════════════════════════════════════
     //  BOARD LOCATIONS
     // ═════════════════════════════════════════════════════════════
@@ -367,7 +373,11 @@ public class JsonQuestStorage implements QuestStorage {
             // Load rank data
             if (data.rankPoints > 0 || data.totalCompleted > 0 || data.totalFailed > 0) {
                 PlayerRankData rankData = new PlayerRankData(
-                        playerUuid, data.rankPoints, data.totalCompleted, data.totalFailed);
+                        playerUuid, data.rankPoints, data.totalCompleted, data.totalFailed,
+                        data.completedByRank);
+                if (data.lastKnownName != null) {
+                    rankData.setLastKnownName(data.lastKnownName);
+                }
                 rankDataCache.put(playerUuid, rankData);
             }
 
@@ -406,6 +416,9 @@ public class JsonQuestStorage implements QuestStorage {
             data.rankPoints = rankData.getRankPoints();
             data.totalCompleted = rankData.getTotalCompleted();
             data.totalFailed = rankData.getTotalFailed();
+            data.completedByRank = rankData.getCompletedByRank().isEmpty()
+                    ? null : new java.util.HashMap<>(rankData.getCompletedByRank());
+            data.lastKnownName = rankData.getLastKnownName();
         }
 
         Map<UUID, PlayerQuestData> quests = playerCache.get(playerUuid);
@@ -576,6 +589,8 @@ public class JsonQuestStorage implements QuestStorage {
         int rankPoints;
         int totalCompleted;
         int totalFailed;
+        Map<String, Integer> completedByRank;
+        String lastKnownName;
         // Quest definitions snapshot — persisted so active quests survive pool refresh / restart
         List<QuestData> questDefinitions;
     }

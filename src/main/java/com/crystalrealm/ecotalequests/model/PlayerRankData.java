@@ -1,6 +1,10 @@
 package com.crystalrealm.ecotalequests.model;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -14,13 +18,25 @@ public class PlayerRankData {
     private int rankPoints;
     private int totalCompleted;
     private int totalFailed;
+    /** Per-rank completion count: rank id (E, D, C, ...) -> count. */
+    private final Map<String, Integer> completedByRank;
+    /** Last known player display name (for leaderboard). */
+    @Nullable
+    private String lastKnownName;
 
     public PlayerRankData(@Nonnull UUID playerUuid, int rankPoints,
                           int totalCompleted, int totalFailed) {
+        this(playerUuid, rankPoints, totalCompleted, totalFailed, null);
+    }
+
+    public PlayerRankData(@Nonnull UUID playerUuid, int rankPoints,
+                          int totalCompleted, int totalFailed,
+                          Map<String, Integer> completedByRank) {
         this.playerUuid = playerUuid;
         this.rankPoints = rankPoints;
         this.totalCompleted = totalCompleted;
         this.totalFailed = totalFailed;
+        this.completedByRank = completedByRank != null ? new HashMap<>(completedByRank) : new HashMap<>();
     }
 
     /** Создаёт новые данные для нового игрока (ранг E, 0 очков). */
@@ -34,6 +50,28 @@ public class PlayerRankData {
     public int getRankPoints() { return rankPoints; }
     public int getTotalCompleted() { return totalCompleted; }
     public int getTotalFailed() { return totalFailed; }
+
+    /** Returns unmodifiable map of completed quests per rank. */
+    @Nonnull
+    public Map<String, Integer> getCompletedByRank() {
+        return Collections.unmodifiableMap(completedByRank);
+    }
+
+    /**
+     * Increments the completed count for a specific quest rank.
+     *
+     * @param rankId the rank ID (e.g. "E", "D", "C")
+     */
+    public void incrementCompletedForRank(@Nonnull String rankId) {
+        completedByRank.merge(rankId, 1, Integer::sum);
+    }
+
+    /** Returns last known player display name (may be null for old data). */
+    @Nullable
+    public String getLastKnownName() { return lastKnownName; }
+
+    /** Updates the player's last known display name. */
+    public void setLastKnownName(@Nullable String name) { this.lastKnownName = name; }
 
     /** Вычисляет текущий ранг на основе очков. */
     @Nonnull
@@ -97,6 +135,7 @@ public class PlayerRankData {
                 ", rank=" + getRank().getId() +
                 ", points=" + rankPoints +
                 ", completed=" + totalCompleted +
-                ", failed=" + totalFailed + '}';
+                ", failed=" + totalFailed +
+                ", byRank=" + completedByRank + '}';
     }
 }

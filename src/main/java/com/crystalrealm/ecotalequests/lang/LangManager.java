@@ -23,7 +23,7 @@ public class LangManager {
     private static final Gson GSON = new Gson();
     private static final Type MAP_TYPE = new TypeToken<Map<String, String>>() {}.getType();
 
-    public static final List<String> SUPPORTED_LANGS = List.of("en", "ru", "pt_br", "fr", "de", "es");
+    public static final List<String> SUPPORTED_LANGS = List.of("en", "ru", "pt_br", "fr", "de", "es", "cs", "hu");
     public static final String DEFAULT_LANG = "ru";
 
     private final Map<String, Map<String, String>> translations = new HashMap<>();
@@ -46,6 +46,7 @@ public class LangManager {
                 LOGGER.info("Loaded {} messages for locale '{}'.", messages.size(), lang);
             }
         }
+        exportDefaultLangs();
         loadCustomOverrides();
         LOGGER.info("LangManager initialized. Server language: '{}'", serverLang);
     }
@@ -105,8 +106,9 @@ public class LangManager {
     // ── Player Language ─────────────────────────────────────────
 
     public boolean setPlayerLang(@Nonnull UUID playerUuid, @Nonnull String langCode) {
-        if (!SUPPORTED_LANGS.contains(langCode.toLowerCase())) return false;
-        playerLangs.put(playerUuid, langCode.toLowerCase());
+        String code = langCode.toLowerCase();
+        if (!SUPPORTED_LANGS.contains(code) && !translations.containsKey(code)) return false;
+        playerLangs.put(playerUuid, code);
         return true;
     }
 
@@ -138,18 +140,51 @@ public class LangManager {
         Path langDir = dataDirectory.resolve("lang");
         if (!Files.isDirectory(langDir)) return;
 
+        try {
+            Files.list(langDir)
+                    .filter(p -> p.toString().endsWith(".json"))
+                    .forEach(customFile -> {
+                        String fileName = customFile.getFileName().toString();
+                        String langCode = fileName.replace(".json", "").toLowerCase();
+                        try (Reader reader = Files.newBufferedReader(customFile, StandardCharsets.UTF_8)) {
+                            Map<String, String> overrides = GSON.fromJson(reader, MAP_TYPE);
+                            if (overrides != null && !overrides.isEmpty()) {
+                                translations.computeIfAbsent(langCode, k -> new HashMap<>()).putAll(overrides);
+                                LOGGER.info("Applied {} custom overrides for '{}'.", overrides.size(), langCode);
+                            }
+                        } catch (Exception e) {
+                            LOGGER.error("Failed to load custom lang file: " + customFile, e);
+                        }
+                    });
+        } catch (IOException e) {
+            LOGGER.error("Failed to scan lang directory", e);
+        }
+    }
+
+    /**
+     * Exports default lang files from JAR to external lang/ folder (only if not already present).
+     * This allows server owners to customize translations without plugin updates.
+     */
+    private void exportDefaultLangs() {
+        Path langDir = dataDirectory.resolve("lang");
+        try {
+            Files.createDirectories(langDir);
+        } catch (IOException e) {
+            LOGGER.error("Failed to create lang directory: {}", e.getMessage());
+            return;
+        }
+
         for (String lang : SUPPORTED_LANGS) {
-            Path customFile = langDir.resolve(lang + ".json");
-            if (Files.exists(customFile)) {
-                try (Reader reader = Files.newBufferedReader(customFile, StandardCharsets.UTF_8)) {
-                    Map<String, String> overrides = GSON.fromJson(reader, MAP_TYPE);
-                    if (overrides != null) {
-                        translations.computeIfAbsent(lang, k -> new HashMap<>()).putAll(overrides);
-                        LOGGER.info("Applied {} custom overrides for '{}'.", overrides.size(), lang);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("Failed to load custom lang file: " + customFile, e);
-                }
+            Path target = langDir.resolve(lang + ".json");
+            if (Files.exists(target)) continue; // don't overwrite existing customizations
+
+            String resourcePath = "lang/" + lang + ".json";
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+                if (is == null) continue;
+                Files.copy(is, target);
+                LOGGER.info("Exported default lang file: {}", target.getFileName());
+            } catch (IOException e) {
+                LOGGER.error("Failed to export lang file '{}': {}", lang, e.getMessage());
             }
         }
     }
